@@ -1,0 +1,95 @@
+﻿///- примечания для разработки:
+Максимальный размер прошивки:
+128 кб = 131072 байт
+Бутлоадер = 5906 байт, отсюда теоретический макс размер = 125172 байта
+
+При этом! При прошивкe бутлоадера avrdude пишет:
+writing flash (129052) 
+----
+После компилирования PLA с автокалибровкой и с экраном
+Размер скетча в двоичном коде: 123 832 байт (из 131 072 байт максимум)
+Hid_bootloader пишет:
+124870 bytes, 96% usage (тогда 100% = 130073 чего не может быть т.к. лоадер 6кб)
+Этот размер входит!
+--------------
+Влезло:
+Размер скетча в двоичном коде: 124 320 байт (из 131 072 байт максимум)
+Скетч использует 125 556 байт (97%) - влезло
+Не влезло!!:
+Размер скетча в двоичном коде: 126 288 байт (из 131 072 байт максимум)
+//---
+через Ардуино:
+не влезло!!!:
+Sketch uses 127096 bytes (97%) of program storage space. Maximum is 130048 bytes.
+Global variables use 4885 bytes (59%) of dynamic memory, leaving 3307 bytes for local variables. Maximum is 8192 bytes.
+Read "C:\Users\work\AppData\Local\Temp\arduino_build_927024/Marlin.ino.hex": 127096 bytes, 97.0% usage
+Влезло:
+Sketch uses 126910 bytes (97%) of program storage space. Maximum is 130048 bytes.
+Global variables use 4884 bytes (59%) of dynamic memory, leaving 3308 bytes for local variables. Maximum is 8192 bytes.
+Read "C:\Users\work\AppData\Local\Temp\arduino_build_927024/Marlin.ino.hex": 126910 bytes, 96.8% usage
+
+
+
+
+
+-------------
+!! Прошивка бутлоадера!!
+
+Для новых плат сначала необходимо прошить бутлоадер через программатор
+
+Качаем avrdude отсюда http://savannah.nongnu.org/projects/avrdude
+Или берем из этой папки, инсталлируем и в 
+кладете в папку приаттаченный бут лоадер
+
+Подключаем плату к программатору к разьему  ICSP. Ножка помеченная кружочком соотвествует стрелочке на разьеме шлейфа программатора.
+
+Далее в коммандной строке: 
+
+1. Заливаем бутлоадер:
+avrdude -c -V usbtiny -p at90usb1286 -U flash:w:BootloaderHID.hex:i
+
+2. Приписывам фузы:
+avrdude -c usbtiny -p at90usb1286 -U lfuse:w:0xde:m -U hfuse:w:0xdb:m -U efuse:w:0xf0:m
+
+
+
+
+
+
+== Старое ==========
+Прошивка плат:
+
+**** Через программатор (прошивка бутлоадера)
+
+1. Заливаем бутлоадер:
+avrdude -c -V usbtiny -p at90usb1286 -U flash:w:BootloaderHID.hex:i
+
+2. Приписывам фузы:
+avrdude -c usbtiny -p at90usb1286 -U lfuse:w:0xde:m -U hfuse:w:0xdb:m -U efuse:w:0xf0:m
+
+**** Через ЮСБ кабель!
+
+3. Заливаем прошивку
+
+Подключаем плату к USB разьему. Для подачи питания временно ставим перемычку на контакты рядом с разьемом USB PWR. При этом светодиод на плате загорится.
+
+Если плата новая, то она сразу готова к прошивке. Если была уже прошита, то её надо ввести в режим прошивки бутлоадера - поставьте перемычку на контакты BOOT и нажмите резет.
+
+
+Запускаем прошивку: hid_bootloader_cli_upgraded -mmcu=at90usb1286 -w -v test.hex
+* если до этого была уже прошивка, то замыкаем контакт BOOT, нажимаем резет. Прошивка стартует автоматически.
+
+------------------
+// если надо оставить включенным JTAG то  hfuse = 0x9b
+Проверка фузов:
+avrdude -p at90usb1286 -c usbtiny -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h -U lock:r:-:h
+
+Проверка подключения к плате:
+avrdude -c usbtiny -p at90usb1286
+
+
+https://learn.adafruit.com/usbtinyisp/avrdude
+
+http://blog.lincomatic.com/?p=548
+
+http://reprap.org/wiki/Printrboard#Bootloaders
