@@ -17,37 +17,33 @@
 	#define MSG_MG_PASTA_MENU					"Приставка Паста"
 	#define MSG_MG_PASTA_ENABLE 				"Паста FR"
 	#define MSG_MG_PASTA_ENABLE_DIR				"Паста DIR"
+	#define MSG_FILAMENTCHANGELATE				"Расширенная пауза"
+	#define MSG_EXTRUDER_MENU					"Экструдер"
+	#define MSG_X_OFFSET						"Смещение Х"
+	#define MSG_Y_OFFSET						"Смещение Y"
+	#define MSG_Z_OFFSET						"Смещение Z"
 	
-	#if defined(FILAMENT_MONITOR)	
+#if defined(FILAMENT_MONITOR)	
 	#define MSG_MG_FILAMENT_MONITOR_MENU		"Монитор прутка"
 	#define MSG_MG_FILAMENT_MONITOR_ENABLE		"Монитор"
 	#define MSG_MG_FILAMENT_MONITOR_STEPS		"Расстояние mm"
 	#define MSG_MG_FILAMENT_MONITOR_DEBUG		"Отладка"
-	#endif
-	#define MSG_FILAMENTCHANGELATE				"Расширенная пауза"
+#endif
 	
-	#if defined(MGLASER)
+#if defined(MGLASER)
 	#define MSG_MG_LASER_MENU					"Лазерная головка"
 	#define MSG_MG_LASER_ENABLE					"Лазер"
 	#define MSG_MG_LASER_ON_OFF					"Тест"
-	#endif
+#endif
 	
-	#define MSG_EXTRUDER_MENU					"Экструдер"
-	
-	#if defined(SW_EXTRUDER)
+#if defined(SW_EXTRUDER)
 	#define MSG_SW_CHANGE_EXTRUDER				"Переключить сопло"
 	#define MSG_SW_EXTRUDER_MENU				"Экструдер SW"
 	#define	MSG_SW_CALIBRATE					"Калибровка сопел"
 	#define	MSG_SW_CALIBRATE_Z					"Калибровка по Z"
 	#define MSG_SW_TIMEADD						"Задержка"
 	#define MSG_SW_SERVICE						"Сервисное полож."
-	#endif
-	
-	#define MSG_X_OFFSET						"Смещение Х"
-	#define MSG_Y_OFFSET						"Смещение Y"
-	#define MSG_Z_OFFSET						"Смещение Z"
-	//#define MSG_STORE_OFFSETS  					"Запись настроек"
-	
+#endif
 	
 	// MG -
 
@@ -174,10 +170,13 @@
 	#define MSG_ZPROBE_OUT 						"Z probe out. bed"
 	#define MSG_POSITION_UNKNOWN 				"Home X/Y before Z"
 	#define MSG_ZPROBE_ZOFFSET 					"Z Offset"
+
+#ifdef BABYSTEPPING
 	#define MSG_BABYSTEP_X 						"Babystep X"
 	#define MSG_BABYSTEP_Y 						"Babystep Y"
 	#define MSG_BABYSTEP_Z 						"Babystep Z"
 	#define MSG_ENDSTOP_ABORT 					"Endstop abort"
+#endif
 
 #ifdef DELTA_CALIBRATION_MENU
     #define MSG_DELTA_CALIBRATE             "Delta Calibration"
