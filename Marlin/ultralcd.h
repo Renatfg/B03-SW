@@ -16,8 +16,10 @@
 void init_fr_pasta();
 void init_dir_pasta();
 void init_pasta_steps();
-void init_filament_monitor();
 
+#if defined(FILAMENT_MONITOR)
+void init_filament_monitor();
+#endif
 #ifdef SW_EXTRUDER
 	void sw_do_calibrate();
 	void sw_do_calibrate_z();

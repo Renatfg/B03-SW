@@ -805,15 +805,15 @@ static void sw_extruder_menu()
 
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-	#if defined SW_EXTRUDER
 	MENU_ITEM(function, MSG_SW_CALIBRATE, sw_do_calibrate);
 	MENU_ITEM(function, MSG_SW_CALIBRATE_Z, sw_do_calibrate_z);
-	MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
-	MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 100);
-	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -12, 12);
-	#endif
 	MENU_ITEM_EDIT(float32, MSG_X_OFFSET, &extruder_offset[1], -12, 0);
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
+	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
+	#if defined SW_EXTRUDER
+	MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
+	MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 100);
+	#endif
 	MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
     END_MENU();
 }
