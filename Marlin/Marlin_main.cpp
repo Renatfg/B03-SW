@@ -210,7 +210,6 @@ extern long mon_extposdiff;
 extern long mon_extposdiff_max;
 extern uint8_t mon_sema;
 #if defined(FILAMENT_MONITOR)
-
 void init_filament_monitor() { 
 mon_sema=0;
 mon_extposdiff = 0;

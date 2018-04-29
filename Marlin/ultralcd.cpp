@@ -1132,6 +1132,7 @@ static void lcd_control_motion_menu()
     END_MENU();
 }
 
+
 static void lcd_control_volumetric_menu()
 {
 	START_MENU();
@@ -1151,6 +1152,7 @@ static void lcd_control_volumetric_menu()
 
 	END_MENU();
 }
+
 
 #ifdef DOGLCD
 static void lcd_set_contrast()

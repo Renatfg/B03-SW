@@ -42,7 +42,7 @@
 #endif
 
 #if defined(MGLASER)
- #define LASER_PIN	42
+ #define LASER_PIN	42 // EX-TERM (вывод 5 внешнего разъема)
 #endif
 
 //#define Z_MIN_PROBE_PIN 34 // E3_ENABLE_PIN  -- нельзя т.к. boot и не включается принтер!
