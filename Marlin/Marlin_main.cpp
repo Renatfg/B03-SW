@@ -206,17 +206,8 @@
 //===========================================================================
 //MG ++
 //MG Filament Monitor
-extern long mon_extposdiff;
-extern long mon_extposdiff_max;
-extern uint8_t mon_sema;
 #if defined(FILAMENT_MONITOR)
-void init_filament_monitor() { 
-mon_sema=0;
-mon_extposdiff = 0;
-mon_extposdiff_max = 0;
-SET_INPUT(E0_MON_PIN);
-//WRITE(E0_MON_PIN,LOW); // enable pullup
-}
+bool filament_monitor_enabled;
 #endif
 bool pasta_enabled = false; // через разъем расширения
 bool pasta_dir_enabled = false; // подключение напрямую
@@ -780,11 +771,11 @@ void setup()
   #endif
 }
 
-//MG Filament Monitor
+//MG Смена филамента и монитор
 bool FJ_Flag = false;
-extern volatile uint8_t jam_detected;
-//MG Смена филамента 
 bool FC_Flag = false;
+bool load_failed = false;
+volatile uint8_t jam_detected = 0;
 volatile uint8_t Filament_change_now = 0;
 
 void loop()
@@ -803,6 +794,7 @@ void loop()
 		delay(300);
     }
   #endif
+   
   if(buflen < (BUFSIZE-1))
     get_command();
   #ifdef SDSUPPORT
@@ -842,8 +834,8 @@ void loop()
     bufindr = (bufindr + 1)%BUFSIZE;
 	
 	//MG Filament Monitor  
-	#if defined(FILAMENT_MONITOR)
-	if (jam_detected == 1) {
+	/*#if defined(FILAMENT_MONITOR)
+	if (jam_detected == 1) { //монитор
 		if (FJ_Flag == false) { // не сработало ли уже?
 			enquecommand_P(PSTR("M600"));
 			FJ_Flag = true;
@@ -851,14 +843,14 @@ void loop()
 	} else { //сброс до следующего застревания
 		FJ_Flag = false;
 	}
-	#endif
+	#endif*/
 	//MG Смена филамента 
 	if (Filament_change_now == 1) {
 		if (FC_Flag == false) { // не сработало ли уже?
-			if (jam_detected == 2) { // суперпауза
-			enquecommand_P(PSTR("M600 S"));
+			if (jam_detected) { // суперпауза или монитор
+				enquecommand_P(PSTR("M600 S"));
 			} else {                 // Монитор прутка
-			enquecommand_P(PSTR("M600"));
+				enquecommand_P(PSTR("M600"));
 			}
 			FC_Flag = true;
 		}
@@ -3889,8 +3881,8 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		}
         delay(100);
 		// MG ++
-		Filament_change_now = 2; // пришла команда, покажем другой экран
-        //LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
+		Filament_change_now = 2; // пришли сюда
+        
 		//MG Filament Monitor
 		static float ttemp;
 		static float tbed;
@@ -3898,40 +3890,37 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		static bool tactive;
 		tactive = true; // держать двигатели включенными
 		if(code_seen('S')) { // вызов командой M600 S (расширеная пауза)
-			jam_detected = 2; // другое сообщение на экране
 			if (code_value() == 1)	tactive = false;
 		}
-		if (jam_detected == 1 || code_seen('S')) 
+		// Если монитор или S команда - выключим нагрев
+		// и подождем нажатия кнопки
+		if (jam_detected == 1 || jam_detected == 2) 
         {
 			ttemp = degTargetHotend(0);
-			//tbed = degBed(); Стол отключать нельзя!
+			tbed = degBed();
 			tfan = fanSpeed;
 			fanSpeed = 0;
 			setTargetHotend0(0);
-			//setTargetBed(0);
+			//setTargetBed(0); Стол отключать нельзя!
 			fanSpeed = 0;
 			while(!lcd_clicked()){
 				manage_heater();
 				manage_inactivity(tactive);
 				lcd_update();
 			}
-			jam_detected = 3; //покажем второй экран	
+			jam_detected = 3; //покажем экран нагрева
 			setTargetHotend0(ttemp);
-			//setTargetBed(tbed);
+			setTargetBed(tbed);
 			lcd_update();
 			delay(1500); //иначе не видит отпускания кнопки
-        } else {
-		//LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGENOW);
-		}
-		// MG --
-		//MG Смена филамента
-		lcd_update();
+        }
+
         uint8_t cnt=0;
         while(!lcd_clicked()){
-          cnt++;
           manage_heater();
           manage_inactivity(true);
           lcd_update();
+		  cnt++;
           if(cnt==0)
           {
           #if BEEPER > 0
@@ -3949,18 +3938,24 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
           }
         }
+			
+		// проверим наличие прутка если датчик включен
+		load_failed = false;
+		if (filament_monitor_enabled && READ(LASER_PIN) == 1) { 		load_failed = true;
+		}
+		
+		bool fil_mon = filament_monitor_enabled;
+		filament_monitor_enabled = false;
+		Filament_change_now = 0;
+		jam_detected = 0;
+		//MG Filament Monitor
 
-			Filament_change_now = 0;
-			//MG Filament Monitor
-			jam_detected = 0;
-			extern uint8_t lcdDrawUpdate;
-			lcdDrawUpdate = 2;
-			lcd_update();
-			delay(500);
-			fanSpeed = tfan;
-			mon_extposdiff_max = 0;
-			//8 мм запас и чтобы можно было выключить если не работает
-			mon_extposdiff = (-8)*axis_steps_per_unit[E_AXIS];
+		extern uint8_t lcdDrawUpdate;
+		lcdDrawUpdate = 2;
+
+		lcd_update();
+		delay(500);
+		fanSpeed = tfan;
 		
         //return to normal
         if(code_seen('L'))
@@ -4008,6 +4003,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 			LCD_ALERTMESSAGEPGM(WELCOME_MSG);     
         }
 		lcd_reset_alert_level();
+		filament_monitor_enabled = fil_mon;
 		//MG --
     }
     break;

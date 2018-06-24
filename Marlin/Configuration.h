@@ -108,10 +108,10 @@
 #if MOTHERBOARD == 555
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
-  //#define MAGNUM_UNI
-  //#define MACHINE_MODEL "UNI"
-  #define MAGNUM_PRO
-  #define MACHINE_MODEL "PRO"
+  #define MAGNUM_UNI
+  #define MACHINE_MODEL "UNI"
+  //#define MAGNUM_PRO
+  //#define MACHINE_MODEL "PRO"
   //#define MAGNUM_EDU
   //#define MACHINE_MODEL "EDU"
   //#define MODUS
@@ -151,8 +151,8 @@
  #endif
  
  // раскоментировать для включения опции
- // Монитор прутка с периодическими импульсами при подаче
-  //#define FILAMENT_MONITOR;
+ // Монитор прутка с кнопкой
+ #define FILAMENT_MONITOR;
  
  // Автокалибровка
  // #define AUTO_IR_PROBE; //при помощи ИР датчика

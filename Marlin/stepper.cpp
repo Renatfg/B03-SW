@@ -89,22 +89,15 @@ static bool check_endstops = true;
 volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0};
 volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
 
-// MG Filament monitor
-long mon_extposdiff = 0;
-long mon_extposdiff_max = 0; //настройка
-int filament_monitor_distance = 4;
-uint8_t mon_pin = 0;
-uint8_t mon_pin_old = 0;
-volatile uint8_t jam_detected = 0 ;
-long mon_maxslack;
-uint8_t mon_sema=0;
-bool filament_monitor_enabled = false;
-bool filament_monitor_debug = false;
-
 // MG Laser
 #if defined(MGLASER)
 extern bool laser_on;
 extern bool laser_enable;
+#endif
+#if defined(FILAMENT_MONITOR)
+extern bool filament_monitor_enabled;
+extern volatile uint8_t jam_detected;
+extern volatile uint8_t Filament_change_now;
 #endif
 //===========================================================================
 //=============================functions         ============================
@@ -647,13 +640,6 @@ ISR(TIMER1_COMPA_vect)
         if (counter_e > 0) {
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
-		  //MG Filament monitor
-		  #if defined(FILAMENT_MONITOR)
-		  if(mon_sema == 0 && (filament_monitor_enabled || filament_monitor_debug)) mon_extposdiff += count_direction[E_AXIS];
-		  #endif
-          
-          //WRITE_E_STEP(LOW);
-		  //MG
 		  if (pasta_enabled) {
 			WRITE(E3_STEP_PIN, LOW)
 		  } else {
@@ -731,38 +717,15 @@ ISR(TIMER1_COMPA_vect)
 
       #ifndef ADVANCE
         counter_e += current_block->steps_e;
-        /*if (counter_e > 0) {
-          WRITE_E_STEP(!INVERT_E_STEP_PIN);
-          counter_e -= current_block->step_event_count;
-          count_position[E_AXIS]+=count_direction[E_AXIS];
-          WRITE_E_STEP(INVERT_E_STEP_PIN);
-        }*/
-		//MG+
-		/* 2016-06-11 пробую убрать лишнее
-		if (pasta_enabled) {
-			if (counter_e > 0) {
-				WRITE(E3_STEP_PIN, !INVERT_E_STEP_PIN);
-				counter_e -= current_block->step_event_count;
-				count_position[E_AXIS]+=count_direction[E_AXIS];
-				//MG Filament monitor
-				#if defined(FILAMENT_MONITOR)
-				if(mon_sema == 0 && (filament_monitor_enabled || filament_monitor_debug)) mon_extposdiff += count_direction[E_AXIS];
-				#endif
-				WRITE(E3_STEP_PIN, INVERT_E_STEP_PIN);
-			}
-		} else { */
-			
-		
+ 		
         if (counter_e > 0) {
           WRITE_E_STEP(!INVERT_E_STEP_PIN);
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
-		  //MG Filament monitor & Laser
-		  #if defined(FILAMENT_MONITOR)
-		  if(mon_sema == 0 && (filament_monitor_enabled || filament_monitor_debug)) mon_extposdiff += count_direction[E_AXIS];
-          #endif
+		  
           WRITE_E_STEP(INVERT_E_STEP_PIN);
 		  
+		  //MG Laser
 		  #if defined(MGLASER)
 		  if (laser_enable && count_direction[E_AXIS] > 0) {
 			WRITE(LASER_PIN, 1);
@@ -784,29 +747,12 @@ ISR(TIMER1_COMPA_vect)
       step_events_completed += 1;
       if(step_events_completed >= current_block->step_event_count) break;
     }
-	//MG Filament Monitor
+	
+	//MG Filament Monitor  
 	#if defined(FILAMENT_MONITOR)
-	if(mon_sema == 0 && (filament_monitor_enabled || filament_monitor_debug))
-	{
-		//Монитор
-		if (mon_extposdiff > mon_extposdiff_max) mon_extposdiff_max = mon_extposdiff;
-		if (mon_extposdiff_max > 9999) { 
-			mon_extposdiff_max = 0; //ограничим 4-мя цифрами
-			mon_extposdiff = 9999;
-		}
-		mon_pin = READ(E0_MON_PIN);
-		if(mon_pin == 0 && mon_pin_old == 1)
-		{
-			mon_extposdiff = 0;
-		}	
-		mon_pin_old = mon_pin;
-		long mon_maxslack_tmp =  (long)(axis_steps_per_unit[E_AXIS] * filament_monitor_distance);
-		if(IS_SD_PRINTING && filament_monitor_enabled && mon_extposdiff  > mon_maxslack_tmp)
-		{
-			// Останавливаемся
-			jam_detected = 1;
-			mon_extposdiff = 0;
-		}
+	if (IS_SD_PRINTING && filament_monitor_enabled && READ(LASER_PIN) == 1) {
+		Filament_change_now = 1;
+		jam_detected = 1;
 	}
 	#endif
 	

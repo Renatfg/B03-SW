@@ -9,18 +9,13 @@
 #include "ConfigurationStore.h"
 //MG ++
 //MG Filament Monitor
-//#if defined(FILAMENT_MONITOR)
-extern long mon_extposdiff;
-extern long mon_extposdiff_max;
-extern int filament_monitor_distance;
+extern volatile uint8_t Filament_change_now;
 extern volatile uint8_t jam_detected;
-extern uint8_t mon_sema;
+extern bool load_failed;
+#if defined(FILAMENT_MONITOR)
 extern bool filament_monitor_enabled;
 extern bool filament_monitor_debug;
-//#endif
-
-//MG Смена филамента
-extern volatile uint8_t Filament_change_now;
+#endif
 
 // MG Laser
 extern bool laser_on;
@@ -796,7 +791,7 @@ static void lcd_move_menu()
     END_MENU();
 }
 
-#if defined MAGNUM_PRO || defined SW_EXTRUDER
+#if defined (MAGNUM_PRO) || defined(SW_EXTRUDER)
 
 static void sw_extruder_menu()
 {
@@ -842,7 +837,7 @@ static void lcd_control_menu()
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
 	#ifdef SW_EXTRUDER
 	MENU_ITEM(submenu, MSG_SW_EXTRUDER_MENU, sw_extruder_menu);
-	#else if defined(MAGNUM_PRO)
+	#elif defined(MAGNUM_PRO)
 	MENU_ITEM(submenu, MSG_EXTRUDER_MENU, sw_extruder_menu);
 	#endif
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
@@ -868,7 +863,7 @@ static void lcd_control_menu()
 	{
 	//MG Filament Monitor
 	#if defined(FILAMENT_MONITOR)
-	MENU_ITEM(submenu, MSG_MG_FILAMENT_MONITOR_MENU, lcd_control_mg_filament_monitor_settings_menu);
+	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_FILAMENT_MONITOR, &filament_monitor_enabled, monitor_on_off);
 	#endif
 	}
 #endif
@@ -901,17 +896,14 @@ static void lcd_control_mg_addons_menu()
 	//MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
 	MENU_ITEM(back, MSG_MG_EXTEND, lcd_control_menu);
 	MENU_ITEM(submenu, MSG_MG_PASTA_MENU, lcd_control_mg_pasta_menu);
-	
-	//MG Filament Monitor
-	#if defined(FILAMENT_MONITOR)
-	MENU_ITEM(submenu, MSG_MG_FILAMENT_MONITOR_MENU, lcd_control_mg_filament_monitor_settings_menu);
-	#endif
-	
 	//MG Laser
 	#if defined(MGLASER)
 	MENU_ITEM(submenu, MSG_MG_LASER_MENU, lcd_control_mg_laser_settings_menu);
 	#endif
-	
+	//MG Filament Monitor
+	#if defined(FILAMENT_MONITOR)
+	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_FILAMENT_MONITOR, &filament_monitor_enabled, monitor_on_off);
+	#endif
 	END_MENU();
 }
 
@@ -925,22 +917,17 @@ static void lcd_control_mg_pasta_menu()
 	
 }
 
-//MG Filament Monitor
 #if defined(FILAMENT_MONITOR)
-static void lcd_control_mg_filament_monitor_settings_menu()
-{
-	START_MENU();
-	//MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-	MENU_ITEM(back, MSG_MG_FILAMENT_MONITOR_MENU, lcd_control_mg_addons_menu);
-	//Включение функции
-	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_FILAMENT_MONITOR_ENABLE, &filament_monitor_enabled, init_filament_monitor);
-	MENU_ITEM_EDIT(int3, MSG_MG_FILAMENT_MONITOR_STEPS, &filament_monitor_distance, 1, 100);
-	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_FILAMENT_MONITOR_DEBUG, &filament_monitor_debug, init_filament_monitor);
-	END_MENU();
+void monitor_on_off() {
+	SET_INPUT(LASER_PIN);
+	WRITE(LASER_PIN, 1); 
+	if (!filament_monitor_enabled) {
+		filament_monitor_enabled = false;
+	} else {
+		filament_monitor_enabled = true;
+	}
 }
 #endif
-//MG -
-
 #if defined(MGLASER)
 static void lcd_control_mg_laser_settings_menu()
 {
@@ -998,7 +985,7 @@ void init_laser() {
 	}
 }
 void laser_on_off() {
-	SET_OUTPUT(LASER_PIN);
+	//SET_OUTPUT(LASER_PIN);
 	if (!laser_on) {
 		laser_on = false;
 		WRITE(LASER_PIN, 0);

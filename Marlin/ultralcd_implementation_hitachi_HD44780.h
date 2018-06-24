@@ -883,7 +883,65 @@ static void lcd_implementation_status_screen()
 	return; // не обновляем экран
 	}
 	#endif
-	// MG --
+	//MG+ Filament Monitor и пауза печати
+	if (Filament_change_now > 0) {
+		if (load_failed) {
+			lcd.setCursor(0, 0);
+			if (READ(LASER_PIN) == 1) {
+				lcd_printPGM(PSTR("!Пруток не загружен!"));
+			} else {
+				lcd_printPGM(PSTR("   Пруток загружен  "));
+			}
+		}
+		if (Filament_change_now == 1 ) { // сменить пруток или суперпауза
+			lcd.setCursor(0, 1);
+			lcd_printPGM(PSTR("  ----------------  "));
+			lcd.setCursor(0, 2);
+			lcd_printPGM(PSTR("   < Пожалуйста >   "));
+			lcd.setCursor(0, 3);
+			lcd_printPGM(PSTR("   < подождите! >   "));
+		} else if (Filament_change_now == 2 ) { // пришли в процедуру
+			if (jam_detected == 1) {
+				lcd.setCursor(0, 1);
+				lcd_printPGM(PSTR("<  Монитор прутка  >"));
+				lcd.setCursor(0, 2);
+				lcd_printPGM(PSTR("   Нажмите OK для   "));
+				lcd.setCursor(0, 3);
+				lcd_printPGM(PSTR(" включения нагрева! "));
+			} else if (jam_detected == 2) { // вызов компандой M600 S
+				lcd.setCursor(0, 1);
+				lcd_printPGM(PSTR("< Расширенная Пауза>"));
+				lcd.setCursor(0, 2);
+				lcd_printPGM(PSTR("   Нажмите OK для   "));
+				lcd.setCursor(0, 3);
+				lcd_printPGM(PSTR(" включения нагрева! "));
+			} else if (jam_detected == 3) {
+				lcd.setCursor(0, 1);
+				lcd_printPGM(PSTR("1.Дождитесь нагрева "));
+				lcd.setCursor(0, 2);
+				lcd_printPGM(PSTR("2.Загрузите пруток  "));
+				lcd.setCursor(0, 3);
+				lcd_printPGM(PSTR("3.Нажмите для печати"));
+			} else if (jam_detected == 4) {
+				lcd.setCursor(0, 1);
+				lcd_printPGM(PSTR("<Пруток не загружен>"));
+				lcd.setCursor(0, 2);
+				lcd_printPGM(PSTR("  Загрузите пруток! "));
+				lcd.setCursor(0, 3);
+				lcd_printPGM(PSTR(" Нажмите для печати "));
+			} else if (Filament_change_now == 2 ) { 
+				// Просто принята команда M600
+				lcd.setCursor(0, 1);
+				lcd_printPGM(PSTR("< Замените пруток  >"));
+				lcd.setCursor(0, 2);
+				lcd_printPGM(PSTR("   Нажмите OK для   "));
+				lcd.setCursor(0, 3);
+				lcd_printPGM(PSTR(" продолжения печати "));
+			}
+		}
+	return; // не обновляем экран
+	}
+	//MG- Filament Monitor и пауза печати
 	
     int tHotend=int(degHotend(0) + 0.5);
     int tTarget=int(degTargetHotend(0) + 0.5);
@@ -975,44 +1033,7 @@ static void lcd_implementation_status_screen()
         lcd.print(' ');
 # endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 #endif//LCD_WIDTH > 19
-//MG+ Filament Monitor
-if (Filament_change_now == 1 ) { // нажато сменить пруток или суперпауза
-	lcd.setCursor(0, 1);
-	lcd_printPGM(PSTR("  ----------------  "));
-	lcd.setCursor(0, 2);
-	lcd_printPGM(PSTR("   < Пожалуйста >   "));
-	lcd.setCursor(0, 3);
-	lcd_printPGM(PSTR("   < подождите! >   "));
-} else if (jam_detected == 1) {
-	lcd.setCursor(0, 1);
-	lcd_printPGM(PSTR("<  Монитор прутка  >"));
-	lcd.setCursor(0, 2);
-	lcd_printPGM(PSTR("   Нажмите OK для   "));
-	lcd.setCursor(0, 3);
-	lcd_printPGM(PSTR(" включения нагрева! "));
-}else if (jam_detected == 2) { // вызов компандой M600 S
-	lcd.setCursor(0, 1);
-	lcd_printPGM(PSTR("< Расширенная Пауза>"));
-	lcd.setCursor(0, 2);
-	lcd_printPGM(PSTR("   Нажмите OK для   "));
-	lcd.setCursor(0, 3);
-	lcd_printPGM(PSTR(" включения нагрева! "));
-} else if (jam_detected == 3) {
-	lcd.setCursor(0, 1);
-	lcd_printPGM(PSTR("<Дождитесь нагрева!>"));
-	lcd.setCursor(0, 2);
-	lcd_printPGM(PSTR("   Нажмите OK для   "));
-	lcd.setCursor(0, 3);
-	lcd_printPGM(PSTR(" продолжения печати "));
-} else if (Filament_change_now == 2 ) { // Принята команда M600
-	lcd.setCursor(0, 1);
-	lcd_printPGM(PSTR("< Замените пруток  >"));
-	lcd.setCursor(0, 2);
-	lcd_printPGM(PSTR("   Нажмите OK для   "));
-	lcd.setCursor(0, 3);
-	lcd_printPGM(PSTR(" продолжения печати "));
-} else {
-//MG- Filament Monitor	
+
 #if LCD_HEIGHT > 2
 //Lines 2 for 4 line LCD
 # if LCD_WIDTH < 20
@@ -1106,16 +1127,11 @@ if (Filament_change_now == 1 ) { // нажато сменить пруток и�
   } else {*/
   	lcd.setCursor(LCD_WIDTH - 1, 0);
 	lcd.print(" ");  
-  //}
   
   // Status message line at the bottom
   lcd.setCursor(0, LCD_HEIGHT - 1);
 
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-//MG+ Filament Monitor
-if (!filament_monitor_debug && !jam_detected && !Filament_change_now) 
-{
-//-
     if (card.isFileOpen()) {
       uint16_t mil = millis(), diff = mil - progressBarTick;
       if (diff >= PROGRESS_BAR_MSG_TIME || !lcd_status_message[0]) {
@@ -1135,7 +1151,6 @@ if (!filament_monitor_debug && !jam_detected && !Filament_change_now)
         return;
       }
     } //card.isFileOpen
-}
 	#endif //LCD_PROGRESS_BAR
 
   //Display both Status message line and Filament display on the last line
@@ -1149,24 +1164,10 @@ if (!filament_monitor_debug && !jam_detected && !Filament_change_now)
   	  return;
     }
   #endif //FILAMENT_LCD_DISPLAY
-} // END if jam_detected
-
-  //MG Filament Monitor
-  //показать значения на экране
-  #if defined(FILAMENT_MONITOR)
-  if (filament_monitor_debug && !jam_detected) {
-	lcd_printPGM(PSTR("#"));
-	lcd.print(READ(E0_MON_PIN));
-	lcd_printPGM(PSTR(" MAX"));
-    lcd.print(mon_extposdiff_max);  
-    lcd_printPGM(PSTR(" NOW"));
-	lcd.print(mon_extposdiff);
-	lcd_printPGM(PSTR(" "));
-   }// else if (jam_detected == 0 && Filament_change_now == 0) {
-   #endif
-   if (!jam_detected && !Filament_change_now) {
-	//MG SW для отладки
-	if (sw_test) {
+ // END if jam_detected
+	
+	#ifdef SW_EXTRUDER
+ 	if (sw_test) {
 		lcd_printPGM(PSTR("                    "));
 		lcd.setCursor(0, LCD_HEIGHT - 1);
 		lcd_printPGM(PSTR("Test Count: "));
@@ -1174,6 +1175,17 @@ if (!filament_monitor_debug && !jam_detected && !Filament_change_now)
 	} else {
 		lcd.print(lcd_status_message);
     }
+	#endif
+	#ifndef SW_EXTRUDER
+		//lcd.print(lcd_status_message);
+	#endif
+	
+	//MG пруток для отладки
+	lcd_printPGM(PSTR("                    "));
+	lcd.setCursor(0, LCD_HEIGHT - 1);
+	lcd_printPGM(PSTR("LASER_PIN "));
+	lcd.print(READ(LASER_PIN));
+	
 	
 	//MG SW для отладки
 	/*
@@ -1198,13 +1210,10 @@ if (!filament_monitor_debug && !jam_detected && !Filament_change_now)
 	lcd.setCursor(17, LCD_HEIGHT - 1);
 	lcd.print(sw_current_max);*/
 	//lcd.print(analogRead(SW_CS_PIN));
-	
-	
-   }
-	#if defined(FILAMENT_MONITOR)
-  }
-  #endif
+  
 }
+
+
 static void lcd_implementation_drawmenu_generic(uint8_t row, const char* pstr, char pre_char, char post_char)
 {
     uint8_t c;
@@ -1283,7 +1292,9 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
   #if LCD_WIDTH < 20
       uint8_t n = LCD_WIDTH - 1 - 1 - strlen_P(data);
     #else
-      uint8_t n = LCD_WIDTH - 1 - 2 - strlen_P(data);
+	  //MG 
+	  uint8_t n = LCD_WIDTH + 4 - 1 - 2 - strlen_P(data);
+      //uint8_t n = LCD_WIDTH - 1 - 2 - strlen_P(data);
   #endif
    	uint8_t u = 0;
     lcd.setCursor(0, row);

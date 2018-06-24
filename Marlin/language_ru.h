@@ -24,10 +24,13 @@
 	#define MSG_Z_OFFSET						"Смещение Z"
 	
 #if defined(FILAMENT_MONITOR)	
+	#define MSG_MG_FILAMENT_MONITOR			"Датчик прутка"
+/*
 	#define MSG_MG_FILAMENT_MONITOR_MENU		"Монитор прутка"
 	#define MSG_MG_FILAMENT_MONITOR_ENABLE		"Монитор"
 	#define MSG_MG_FILAMENT_MONITOR_STEPS		"Расстояние mm"
 	#define MSG_MG_FILAMENT_MONITOR_DEBUG		"Отладка"
+*/
 #endif
 	
 #if defined(MGLASER)
@@ -100,8 +103,8 @@
 	#define MSG_MAX								"\002 Максимум"
 	#define MSG_FACTOR							"\002 Фактор"
 	#define MSG_AUTOTEMP						"Autotemp"
-	#define MSG_ON								"Вкл. "
-	#define MSG_OFF								"Выкл. "
+	#define MSG_ON								"Вкл"
+	#define MSG_OFF								"Выкл"
 	#define MSG_PID_P							"PID-P "
 	#define MSG_PID_I							"PID-I "
 	#define MSG_PID_D							"PID-D "

@@ -19,7 +19,17 @@
 
 /****************************************************************************************
 * Magnum 3D
-****************************************************************************************/
+// AT90USBxx_TEENSYPP_ASSIGNMENTS -- Use Teensyduino Teensy++2.0 assignments.
+
+    /**
+
+    AT90USB  51 50 49 48 47 46 45 44 10 11 12 13 14 15 16 17 35 36 37 38 39 40 41 42 25 26 27 28 29 30 31 32 33 34 43 09 18 19 01 02 61 60 59 58 57 56 55 54
+    Port     A0 A1 A2 A3 A4 A5 A6 A7 B0 B1 B2 B3 B4 B5 B6 B7 C0 C1 C2 C3 C4 C5 C6 C7 D0 D1 D2 D3 D4 D5 D6 D7 E0 E1 E2 E3 E4 E5 E6 E7 F0 F1 F2 F3 F4 F5 F6 F7
+    Marlin   00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
+    Teensy   28 29 30 31 32 33 34 35 20 21 22 23 24 25 26 27 10 11 12 13 14 15 16 17 00 01 02 03 04 05 06 07 08 09(46*47)36 37 18 19 38 39 40 41 42 43 44 45
+             The pins 46 and 47 are not supported by Teensyduino, but are supported below.
+    */
+/****************************************************************************************/
 #if MOTHERBOARD == 555
 #define KNOWN_BOARD 1
 #define AT90USB 1286  // Disable MarlinSerial etc.
@@ -36,17 +46,11 @@
 
 #define DISABLE_JTAG       true
 
-
-#if defined(FILAMENT_MONITOR)
- #define E0_MON_PIN	13// 14 - B6  - E1-HOTEND // 13 - B5  - EХ-HOTEND (вывод 3 внешнего разъема)
-#endif
-
-#if defined(MGLASER)
+#if defined(MGLASER) || defined(FILAMENT_MONITOR)
  #define LASER_PIN	42 // EX-TERM (вывод 5 внешнего разъема)
 #endif
 
 //#define Z_MIN_PROBE_PIN 34 // E3_ENABLE_PIN  -- нельзя т.к. boot и не включается принтер!
-//#define Z_MIN_PROBE_PIN 37 // E3_DIR_PIN (вывод 4 внешнего разъема)
 
 #if defined(M2000)
  #define X_STEP_PIN          29
@@ -73,7 +77,6 @@
  #define Z_DIR_PIN           5
  #define Z_ENABLE_PIN       23   
 #endif
-
 
 #define E0_STEP_PIN         6
 #define E0_DIR_PIN          7
@@ -102,11 +105,11 @@ extern bool pasta_dir_enabled;
   #define TEMP_1_PIN         3
   #if defined(SW_EXTRUDER)
 	#if defined(OLD_ONE)
-	#define HEATER_1_PIN       14
-	#define HEATER_BED_PIN     20  // Bed
+		#define HEATER_1_PIN       14
+		#define HEATER_BED_PIN     20  // Bed
 	#else
-	#define HEATER_1_PIN       20
-	#define HEATER_BED_PIN     14  // Bed
+		#define HEATER_1_PIN       20
+		#define HEATER_BED_PIN     14  // Bed
 	#endif
 	#define E1_STEP_PIN        6
 	#define E1_DIR_PIN         7
@@ -118,15 +121,12 @@ extern bool pasta_dir_enabled;
 	#define SW_DIR_PIN			37 // EX-1 DIR
 	#define SW_T0_PIN			13  // EX-Hotend   
 	#if defined(OLD_ONE)
-	#define SW_EN_PIN			46 // E1-Enable   // на старом 46
-	#define SW_T1_PIN			44  //EX-1 STEP // на старом 44
+		#define SW_EN_PIN			46 // E1-Enable   // на старом 46
+		#define SW_T1_PIN			44  //EX-1 STEP // на старом 44
 	#else
-	#define SW_EN_PIN			44 // E1-Enable   // на старом 46
-	#define SW_T1_PIN			46  //EX-1 STEP // на старом 44
+		#define SW_EN_PIN			44 // E1-Enable   // на старом 46
+		#define SW_T1_PIN			46  //EX-1 STEP // на старом 44
 	#endif
-	
-	
-	
   #else
 	#define HEATER_1_PIN       14
 	#define HEATER_BED_PIN     20  // Bed
@@ -135,7 +135,7 @@ extern bool pasta_dir_enabled;
 	#define E1_ENABLE_PIN      44
   #endif
 #else 
-	#define HEATER_1_PIN       14
+	//#define HEATER_1_PIN       14
 	#define HEATER_BED_PIN     20  // Bed
 #endif
 

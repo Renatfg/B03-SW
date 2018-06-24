@@ -23,6 +23,7 @@ Hid_bootloader пишет:
 Sketch uses 127096 bytes (97%) of program storage space. Maximum is 130048 bytes.
 Global variables use 4885 bytes (59%) of dynamic memory, leaving 3307 bytes for local variables. Maximum is 8192 bytes.
 Read "C:\Users\work\AppData\Local\Temp\arduino_build_927024/Marlin.ino.hex": 127096 bytes, 97.0% usage
+
 Влезло:
 Sketch uses 126910 bytes (97%) of program storage space. Maximum is 130048 bytes.
 Global variables use 4884 bytes (59%) of dynamic memory, leaving 3308 bytes for local variables. Maximum is 8192 bytes.

@@ -27,6 +27,7 @@ void init_filament_monitor();
 #if defined(MGLASER)
 void init_laser();
 void laser_on_off();
+void monitor_on_off();
 #endif
   
 #ifdef DOGLCD
