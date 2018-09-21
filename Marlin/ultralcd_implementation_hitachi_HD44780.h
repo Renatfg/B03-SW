@@ -885,6 +885,7 @@ static void lcd_implementation_status_screen()
 	#endif
 	//MG+ Filament Monitor и пауза печати
 	if (Filament_change_now > 0) {
+		#if defined FILAMENT_MONITOR
 		if (load_failed) {
 			lcd.setCursor(0, 0);
 			if (READ(LASER_PIN) == 1) {
@@ -893,6 +894,7 @@ static void lcd_implementation_status_screen()
 				lcd_printPGM(PSTR("   Пруток загружен  "));
 			}
 		}
+		#endif
 		if (Filament_change_now == 1 ) { // сменить пруток или суперпауза
 			lcd.setCursor(0, 1);
 			lcd_printPGM(PSTR("  ----------------  "));
@@ -1181,11 +1183,12 @@ static void lcd_implementation_status_screen()
 	#endif
 	
 	//MG пруток для отладки
+	/*
 	lcd_printPGM(PSTR("                    "));
 	lcd.setCursor(0, LCD_HEIGHT - 1);
 	lcd_printPGM(PSTR("LASER_PIN "));
 	lcd.print(READ(LASER_PIN));
-	
+	*/
 	
 	//MG SW для отладки
 	/*

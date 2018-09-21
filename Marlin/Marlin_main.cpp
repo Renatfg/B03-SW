@@ -3940,12 +3940,14 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         }
 			
 		// проверим наличие прутка если датчик включен
+		#if defined FILAMENT_MONITOR
 		load_failed = false;
-		if (filament_monitor_enabled && READ(LASER_PIN) == 1) { 		load_failed = true;
+		if (filament_monitor_enabled && READ(LASER_PIN) == 1) {
+			load_failed = true;
 		}
-		
 		bool fil_mon = filament_monitor_enabled;
 		filament_monitor_enabled = false;
+		#endif
 		Filament_change_now = 0;
 		jam_detected = 0;
 		//MG Filament Monitor
@@ -4003,7 +4005,9 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 			LCD_ALERTMESSAGEPGM(WELCOME_MSG);     
         }
 		lcd_reset_alert_level();
+		#if defined FILAMENT_MONITOR
 		filament_monitor_enabled = fil_mon;
+		#endif
 		//MG --
     }
     break;
@@ -5148,6 +5152,9 @@ void sw_do_change(int tmp_extruder) {
 	  }*/
 	  // проверим положение экструдера
 	  // Датчик включен = 0
+	  
+	  //old
+	  
 	  if ((tmp_extruder == 0 && READ(SW_T0_PIN) == 1) || (tmp_extruder == 1 && READ(SW_T1_PIN) == 1)) {
 		// 8801
 		digitalWrite(SW_DIR_PIN, tmp_extruder);
@@ -5155,6 +5162,11 @@ void sw_do_change(int tmp_extruder) {
 		WRITE(SW_EN_PIN, 1);
 		sw_on_timer = millis();
 	  }
+	  
+	  //old
+	  //NEW
+		//digitalWrite(SW_DIR_PIN, tmp_extruder);
+		//WRITE(SW_EN_PIN, 1);	  
 	  
 	  //DRV8833
 	  //digitalWrite(SW_DIR_PIN, !tmp_extruder);
@@ -5169,41 +5181,15 @@ void sw_do_change(int tmp_extruder) {
 		//delay(sw_time_limit); //500 / 650
 	  }
 	  
-	  // эта строка здесь! иначе повторно выполняется код
-	  // и не до конца переключает, поэтому все запомним здесь.
-	  /*
-	  int aextr;
-	  aextr = active_extruder;
-	  float nowposition[4];
-	  nowposition[X_AXIS] = current_position[X_AXIS];
-	  nowposition[Y_AXIS] = current_position[Y_AXIS];
-	  nowposition[Z_AXIS] = current_position[Z_AXIS];
-	  nowposition[E_AXIS] = current_position[E_AXIS];
-	  active_extruder = tmp_extruder;
-	  */
-	   //active_extruder = tmp_extruder;
-	   
-	  //+ хороший код работает только сверху переключения но проблема
-	  // в том что стол поднимает обратно не дождавшись переключения!
-	  // Скорректируем высоту стола
-	  //plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] - extruder_offset[Z_AXIS][active_extruder] + extruder_offset[Z_AXIS][tmp_extruder]-1, current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
-	  //st_synchronize();*/
-	  
       // Set the new active extruder and position 
 	  int sve_active_extruder = active_extruder;
 	  current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][active_extruder] + extruder_offset[X_AXIS][tmp_extruder];
 	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][active_extruder] + extruder_offset[Y_AXIS][tmp_extruder];
-	  //current_position[Z_AXIS] = current_position[Z_AXIS] - extruder_offset[Z_AXIS][active_extruder] + extruder_offset[Z_AXIS][tmp_extruder];
 	  active_extruder = tmp_extruder;
-	  //plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]+1, current_position[E_AXIS]);
 	  // Прибавляем смещения по Z с инверсией, т.к. экструдер уже переключен
 	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + extruder_offset[Z_AXIS][sve_active_extruder] - extruder_offset[Z_AXIS][tmp_extruder]+1, current_position[E_AXIS]);
-	  //feedrate = oldFeedrate;
-	  //sw_switching_now = 0;
-	  //-
-	   
-	   
-	  //Цикл переключения SW ========
+  
+	//Цикл переключения SW ========
 		//cli();   // disable interrupts
 		sw_timeout = 0;
 		sw_on_timer_add = 0;
@@ -5228,40 +5214,9 @@ void sw_do_change(int tmp_extruder) {
 				}
 		}
 		WRITE(SW_EN_PIN, 0);
-		///END Цикл переключения SW ========
-		//sei();   // enable interrupts
-		// Скорректируем высоту стола
-	 // plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
-	 // st_synchronize();
-	 // plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], Z_pos, current_position[E_AXIS]);
-	// plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
-	 //st_synchronize();
-	  
-	  feedrate = oldFeedrate;
-		//new +
-	  // Скорректируем высоту стола
-	  //plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], nowposition[Z_AXIS] - extruder_offset[Z_AXIS][aextr] + extruder_offset[Z_AXIS][tmp_extruder], current_position[E_AXIS], max_feedrate[Z_AXIS], aextr);
-	  //st_synchronize();
-	
-	  // Установим позицию
-	  /*current_position[X_AXIS] = nowposition[X_AXIS] - extruder_offset[X_AXIS][aextr] + extruder_offset[X_AXIS][tmp_extruder];
-	  current_position[Y_AXIS] = nowposition[Y_AXIS] - extruder_offset[Y_AXIS][aextr] + extruder_offset[Y_AXIS][tmp_extruder];
-	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], nowposition[Z_AXIS], nowposition[E_AXIS]);
-	  feedrate = oldFeedrate;		
-	  */
-	
-	  // хороший код работает сверху переключения +
-	  // Скорректируем высоту стола
-	  /*plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] - extruder_offset[Z_AXIS][active_extruder] + extruder_offset[Z_AXIS][tmp_extruder], current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
-	  st_synchronize();*/
-      // Set the new active extruder and position 
-	  /*current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][active_extruder] + extruder_offset[X_AXIS][tmp_extruder];
-	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][active_extruder] + extruder_offset[Y_AXIS][tmp_extruder];
-	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-	  active_extruder = tmp_extruder;
-	  feedrate = oldFeedrate;
-	  sw_switching_now = 0;*/
-	  //-
+	//END Цикл переключения SW ========
+
+	feedrate = oldFeedrate;
 	acceleration=DEFAULT_ACCELERATION;
 	max_xy_jerk=DEFAULT_XYJERK;
 }
