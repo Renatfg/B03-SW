@@ -524,9 +524,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 	 #define Z_MAX_POS_DEFAULT 180
 	 #define Z_MIN_POS_DEFAULT 0 
 	#elif defined(SW_EXTRUDER)
-	 #define X_MAX_POS_DEFAULT 233
+	 #define X_MAX_POS_DEFAULT 250
 	 #define X_MIN_POS_DEFAULT 0
-	 #define Y_MAX_POS_DEFAULT 168
+	 #define Y_MAX_POS_DEFAULT 180
 	 #define Y_MIN_POS_DEFAULT 0
 	 #define Z_MAX_POS_DEFAULT 180
 	 #define Z_MIN_POS_DEFAULT 0 

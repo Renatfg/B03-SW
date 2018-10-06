@@ -104,13 +104,17 @@ extern bool pasta_dir_enabled;
 #if defined(MAGNUM_PRO)
   #define TEMP_1_PIN         3
   #if defined(SW_EXTRUDER)
-	#if defined(OLD_ONE)
+	/*#if defined(OLD_ONE)
 		#define HEATER_1_PIN       14
 		#define HEATER_BED_PIN     20  // Bed
 	#else
 		#define HEATER_1_PIN       20
 		#define HEATER_BED_PIN     14  // Bed
-	#endif
+	#endif*/
+	
+	#define HEATER_1_PIN       14
+	#define HEATER_BED_PIN     20  // Bed
+	
 	#define E1_STEP_PIN        6
 	#define E1_DIR_PIN         7
 	#define E1_ENABLE_PIN      19
@@ -119,7 +123,12 @@ extern bool pasta_dir_enabled;
 	#define INVERT_E1_DIR 		false
 	
 	#define SW_DIR_PIN			37 // EX-1 DIR
-	#define SW_T0_PIN			13  // EX-Hotend   
+	#define SW_EN_PIN			44 // E1-Enable   // на старом 46
+	//#define SW_T1_PIN			46  //EX-1 STEP // на старом 44
+	//#define SW_T0_PIN			13  // EX-Hotend   
+	#define SW_T0_PIN			46  // EX-Hotend
+	#define SW_T1_PIN			13  //EX-1 STEP //
+	/*
 	#if defined(OLD_ONE)
 		#define SW_EN_PIN			46 // E1-Enable   // на старом 46
 		#define SW_T1_PIN			44  //EX-1 STEP // на старом 44
@@ -127,6 +136,7 @@ extern bool pasta_dir_enabled;
 		#define SW_EN_PIN			44 // E1-Enable   // на старом 46
 		#define SW_T1_PIN			46  //EX-1 STEP // на старом 44
 	#endif
+	*/
   #else
 	#define HEATER_1_PIN       14
 	#define HEATER_BED_PIN     20  // Bed
