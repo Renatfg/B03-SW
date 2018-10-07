@@ -499,7 +499,7 @@ static void lcd_tune_menu()
 #endif
     END_MENU();
 }
-
+/*
 void lcd_preheat_pla0()
 {
     setTargetHotend0(plaPreheatHotendTemp);
@@ -597,7 +597,7 @@ void lcd_preheat_abs_bedonly()
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
-
+/*
 static void lcd_preheat_pla_menu()
 {
     START_MENU();
@@ -637,7 +637,7 @@ static void lcd_preheat_abs_menu()
 #endif
     END_MENU();
 }
-
+*/
 void lcd_cooldown()
 {
     setTargetHotend0(0);
@@ -657,8 +657,6 @@ static void lcd_prepare_menu() //Меню управление
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
     #endif
 #endif
-    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
-    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
 	#ifdef SW_EXTRUDER
 	if (active_extruder == 0) {
 		MENU_ITEM(gcode, MSG_SW_CHANGE_EXTRUDER, PSTR("T1"));
@@ -666,8 +664,11 @@ static void lcd_prepare_menu() //Меню управление
 		MENU_ITEM(gcode, MSG_SW_CHANGE_EXTRUDER, PSTR("T0"));
 	}
 	#endif
+	MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
 	MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
+/*
 #if TEMP_SENSOR_0 != 0
   #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_BED != 0
     MENU_ITEM(submenu, MSG_PREHEAT_PLA, lcd_preheat_pla_menu);
@@ -677,6 +678,7 @@ static void lcd_prepare_menu() //Меню управление
     MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs0);
   #endif
 #endif
+*/
 #if PS_ON_PIN > -1
     if (powersupply)
     {
@@ -800,17 +802,23 @@ static void sw_extruder_menu()
 
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+	if (!movesplanned() && !IS_SD_PRINTING) { 
 	MENU_ITEM(function, MSG_SW_CALIBRATE, sw_do_calibrate);
 	MENU_ITEM(function, MSG_SW_CALIBRATE_Z, sw_do_calibrate_z);
+	}
 	MENU_ITEM_EDIT(float32, MSG_X_OFFSET, &extruder_offset[1], -12, 0);
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
 	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
 	#if defined SW_EXTRUDER
+	if (!movesplanned() && !IS_SD_PRINTING) { 
 	MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
-	MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 100);
+	}
+	MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 60);
 	#endif
+	if (!movesplanned() && !IS_SD_PRINTING) {
 	MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
-    END_MENU();
+    }
+	END_MENU();
 }
 
 static void sw_service_position() {
@@ -1040,11 +1048,14 @@ static void lcd_control_temperature_menu()
 # endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
 #endif // MOTHERBOARD 555 MG
+/*
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+*/
     END_MENU();
 }
 
+/*
 static void lcd_control_temperature_preheat_pla_settings_menu()
 {
     START_MENU();
@@ -1078,7 +1089,7 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
 #endif
     END_MENU();
 }
-
+*/
 static void lcd_control_motion_menu()
 {
     START_MENU();
@@ -1090,10 +1101,10 @@ static void lcd_control_motion_menu()
     MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
     MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
     MENU_ITEM_EDIT(float3, MSG_VE_JERK, &max_e_jerk, 1, 990);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &max_feedrate[X_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &max_feedrate[Y_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &max_feedrate[Z_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E, &max_feedrate[E_AXIS], 1, 999);
+   // MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &max_feedrate[X_AXIS], 1, 999);
+   // MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &max_feedrate[Y_AXIS], 1, 999);
+   // MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &max_feedrate[Z_AXIS], 1, 999);
+   // MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E, &max_feedrate[E_AXIS], 1, 999);
 #if MOTHERBOARD == 555 // MG
 // эти настройки лишние, они не нужны на LCD
 #else

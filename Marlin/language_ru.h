@@ -95,8 +95,8 @@
 	#define MSG_BED								"= Стол t\001"
 	#define MSG_FAN_SPEED						"Обдув модели"
 	#define MSG_FLOW							"Подача прутка" //это для всех экструдеров (отключено в меню)
-	#define MSG_FLOW0							"Подача прутка" //это для экструдера 0
-	#define MSG_FLOW1							"Поток1"
+	#define MSG_FLOW0							"Подача 1 экст" //это для экструдера 0
+	#define MSG_FLOW1							"Подача 2 экст"
 	#define MSG_FLOW2 							"Поток2"
 	#define MSG_CONTROL							"Настроить принтер"
 	#define MSG_MIN								"\002 Минимум"

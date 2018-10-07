@@ -5222,7 +5222,7 @@ void sw_do_change(int tmp_extruder) {
 }
 
 void sw_do_clean() {
-	static float retract = 5;
+	  /* static float retract = 5;
 	   static float flow = 3;
 	   static float retract_speed = 50;
 	   static float flow_speed = 8;
@@ -5249,26 +5249,26 @@ void sw_do_clean() {
 		  // отодвинем 
 		  plan_buffer_line(x_poz_2, y_poz_2, current_position[Z_AXIS]+1, e_target, max_feedrate[X_AXIS], active_extruder);
 
-/*				
-		for (int i = 1; i < 6; i++) {
-          plan_buffer_line(250 - i*2, 2, current_position[Z_AXIS] + 1,
-                current_position[E_AXIS], max_feedrate[X_AXIS], active_extruder);
-        }
-	*/			
+				
+//		for (int i = 1; i < 6; i++) {
+//         plan_buffer_line(250 - i*2, 2, current_position[Z_AXIS] + 1,
+//                current_position[E_AXIS], max_feedrate[X_AXIS], active_extruder);
+//        }
+				
 		  
 		  //return
-		 //** plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, e_target, max_feedrate[X_AXIS], active_extruder);
+		 // plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, e_target, max_feedrate[X_AXIS], active_extruder);
 
 		  plan_set_e_position(current_position[E_AXIS] - retract);
 		  
 		  //make_move = true;
 		  
 		  //final untretract
-		 //** plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], 15, active_extruder);
+		 // plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], 15, active_extruder);
 		current_position[X_AXIS] = x_poz_2;
 		current_position[Y_AXIS] = y_poz_2;
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS]);	  
-        st_synchronize();
+        st_synchronize(); */
 }
 
 #endif
