@@ -885,7 +885,7 @@ static void sw_extruder_menu()
 	 #endif
 	}
 	#endif
-	MENU_ITEM_EDIT(float32, MSG_X_OFFSET, &extruder_offset[1], -12, 0);
+	MENU_ITEM_EDIT(float32, MSG_X_OFFSET, &extruder_offset[1], -40, 0);
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
 	#if defined SW_EXTRUDER
 	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
