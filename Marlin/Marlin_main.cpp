@@ -446,6 +446,7 @@ bool cancel_heatup = false ;
   int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
 #endif
 
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
 #ifdef SW_EXTRUDER
   void sw_do_change(int temp_extruder);
   void sw_do_clean();
@@ -454,12 +455,17 @@ bool cancel_heatup = false ;
   int sw_current_limit=800; // 800 - по факту отключает осечку по току переопределяется в команде T* W300
   int sw_test=0; // зацикливает переключение для теста
   unsigned long sw_on_timer = 0;
+  unsigned long sw_on_timer_show = 0; // для отладки
   unsigned long sw_on_timer_add = 0;
-  unsigned long sw_time_limit = 800; // 0.8 секунды защита переключения
-  unsigned long sw_time_add = 0; // доп время для захода на самофиксацию
+  unsigned long sw_time_limit = 450; // 0.45 секунды защита переключения
+  unsigned long sw_time_add = 30; // доп время для захода на самофиксацию
   int sw_timeout = 0; // единица если переключение было прервано по таймеру а не датчику
   int sw_switching_now = 0; // чтобы не входило повторно в цикл
+#else
+  void pro_do_change(int temp_extruder);
 #endif
+#endif
+
 
 const char errormagic[] PROGMEM = "Error:";
 const char echomagic[] PROGMEM = "echo:";
@@ -1638,7 +1644,7 @@ void process_commands()
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
       previous_millis_cmd = millis();
-
+	
       enable_endstops(true);
 
       for(int8_t i=0; i < NUM_AXIS; i++) {
@@ -1853,6 +1859,20 @@ void process_commands()
         enable_endstops(false);
       #endif
 
+	#ifdef MAGNUM_PRO
+	//Нужно применить смещения
+	if (active_extruder != 0) {
+	  current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][0] + extruder_offset[X_AXIS][1];
+	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][0] + extruder_offset[Y_AXIS][1];
+	
+	//nn
+	// Прибавляем смещения по Z с инверсией, т.к. Z в нуле
+	  current_position[Z_AXIS] = current_position[Z_AXIS] + extruder_offset[Z_AXIS][0] - extruder_offset[Z_AXIS][1];
+	  
+	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+	}
+	#endif	  
+	  
       feedrate = saved_feedrate;
       feedmultiply = saved_feedmultiply;
       previous_millis_cmd = millis();
@@ -3795,6 +3815,13 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
     #ifdef FILAMENTCHANGEENABLE
     case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
     {
+		#if defined SW_EXTRUDER
+			if (active_extruder != reload_filament_sw_ext) {
+				sw_do_change(reload_filament_sw_ext);
+				reload_filament_sw_ext = -1; // поставим флаг
+			}
+		#endif
+		
         float target[4];
         float lastpos[4];
         target[X_AXIS]=current_position[X_AXIS];
@@ -3830,7 +3857,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
         }
         //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
-	plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Z_AXIS]/2, active_extruder);
+	plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Z_AXIS]/4, active_extruder);
 
         //move xy
         if(code_seen('X'))
@@ -3855,7 +3882,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         }
 
         //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
-	plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/2, active_extruder);
+	plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/4, active_extruder);
 
         if(code_seen('L'))
         {
@@ -3879,15 +3906,27 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		if (pasta_enabled) {
 			WRITE(E3_ENABLE_PIN, !E_ENABLE_ON);
 		}
-        delay(100);
+       // delay(100);
 		// MG ++
 		Filament_change_now = 2; // пришли сюда
         
 		//MG Filament Monitor
 		static float ttemp;
+		#if defined SW_EXTRUDER
+		static float ttemp1;
+		#endif
 		static float tbed;
 		static float tfan;
 		static bool tactive;
+		
+		ttemp = degTargetHotend(0);
+		#if defined SW_EXTRUDER
+		ttemp1 = degTargetHotend(1);
+		#endif
+		tbed = degBed();
+		tfan = fanSpeed;
+		fanSpeed = 0;
+		
 		tactive = true; // держать двигатели включенными
 		if(code_seen('S')) { // вызов командой M600 S (расширеная пауза)
 			if (code_value() == 1)	tactive = false;
@@ -3896,13 +3935,13 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		// и подождем нажатия кнопки
 		if (jam_detected == 1 || jam_detected == 2) 
         {
-			ttemp = degTargetHotend(0);
-			tbed = degBed();
-			tfan = fanSpeed;
-			fanSpeed = 0;
 			setTargetHotend0(0);
+			#if defined SW_EXTRUDER
+			setTargetHotend1(0);
+			#endif
+
 			//setTargetBed(0); Стол отключать нельзя!
-			fanSpeed = 0;
+			
 			while(!lcd_clicked()){
 				manage_heater();
 				manage_inactivity(tactive);
@@ -3910,35 +3949,14 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 			}
 			jam_detected = 3; //покажем экран нагрева
 			setTargetHotend0(ttemp);
-			setTargetBed(tbed);
+			#if defined SW_EXTRUDER
+			setTargetHotend1(ttemp1);
+			#endif
+			//setTargetBed(tbed);
 			lcd_update();
 			delay(1500); //иначе не видит отпускания кнопки
         }
-
-        uint8_t cnt=0;
-        while(!lcd_clicked()){
-          manage_heater();
-          manage_inactivity(true);
-          lcd_update();
-		  cnt++;
-          if(cnt==0)
-          {
-          #if BEEPER > 0
-            SET_OUTPUT(BEEPER);
-            WRITE(BEEPER,HIGH);
-            delay(3);
-            WRITE(BEEPER,LOW);
-            delay(3);
-          #else
-			#if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-              lcd_buzz(1000/6,100);
-			#else
-			  lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
-			#endif
-          #endif
-          }
-        }
-			
+	
 		// проверим наличие прутка если датчик включен
 		#if defined FILAMENT_MONITOR
 		load_failed = false;
@@ -3948,8 +3966,67 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		bool fil_mon = filament_monitor_enabled;
 		filament_monitor_enabled = false;
 		#endif
-		Filament_change_now = 0;
-		jam_detected = 0;
+		#if defined SW_EXTRUDER
+			reload_filament_sw = 1; // надпись подготовьте
+			delay(200);	
+			lcd_ignore_click();
+			while(!lcd_clicked()){
+				manage_heater();
+				manage_inactivity(tactive);
+				lcd_update();
+			}
+			reload_filament_sw = 2;// Загружаем
+			
+			plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS] + 500, 3, active_extruder);
+			
+			// Ждем нажатия чтобы прекратить подачу
+			delay(1000);
+			lcd_ignore_click();
+			while(!lcd_clicked()){
+				manage_heater();
+				manage_inactivity(true);
+				lcd_update();
+			}
+			
+			// Установим текущую координату
+			disable_e0();
+			disable_e1();
+			plan_discard_current_block();
+			current_block = NULL;
+			target[E_AXIS] = st_get_position(E_AXIS)/axis_steps_per_unit[E_AXIS];
+			
+			reload_filament_sw = 0; //Все
+			Filament_change_now = 0;
+			jam_detected = 0;		
+	
+	
+		#else
+			uint8_t cnt=0;
+			while(!lcd_clicked()){
+			  manage_heater();
+			  manage_inactivity(true);
+			  lcd_update();
+			  cnt++;
+			  if(cnt==0)
+			  {
+			  #if BEEPER > 0
+				SET_OUTPUT(BEEPER);
+				WRITE(BEEPER,HIGH);
+				delay(3);
+				WRITE(BEEPER,LOW);
+				delay(3);
+			  #else
+				#if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
+				  lcd_buzz(1000/6,100);
+				#else
+				  lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
+				#endif
+			  #endif
+			  }
+			}
+			Filament_change_now = 0;
+			jam_detected = 0;			
+		#endif
 		//MG Filament Monitor
 
 		extern uint8_t lcdDrawUpdate;
@@ -3979,10 +4056,10 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		   plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/2, active_extruder);
         #endif
 		
-		plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/2, active_extruder); //should do nothing
+		plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/4, active_extruder); //should do nothing
 
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/2, active_extruder); //move xy back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/2, active_extruder); //move z back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/4, active_extruder); //move xy back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], homing_feedrate[Y_AXIS]/4, active_extruder); //move z back
        
 	   	//MG анретракт перед возвратом к печати
 		#ifdef FILAMENTCHANGE_FINISHRETRACT
@@ -4009,6 +4086,17 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		filament_monitor_enabled = fil_mon;
 		#endif
 		//MG --
+		
+		#if defined SW_EXTRUDER
+			if (reload_filament_sw_ext == -1) {
+				//было переключено перед сменой филамента
+				if (active_extruder == 0) {
+					sw_do_change(1);
+				} else {
+					sw_do_change(0);
+				}
+			}
+		#endif
     }
     break;
     #endif //FILAMENTCHANGEENABLE
@@ -5133,19 +5221,28 @@ void calculate_volumetric_multipliers() {
 #endif
 }
 
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
 #ifdef SW_EXTRUDER
 void sw_do_change(int tmp_extruder) {
+  if (active_extruder != tmp_extruder) {
 	sw_switching_now = 1; // чтобы не входило повторно в цикл
-	 float oldFeedrate = feedrate;
-	 float Z_pos = current_position[Z_AXIS];
+	 float zhop = 1.28 ; // 0.32 = 16 шагов
+ 	// float oldFeedrate = feedrate;
+	// float Z_pos = current_position[Z_AXIS];
+	 
+	saved_feedrate = feedrate;
+    saved_feedmultiply = feedmultiply;
+    feedmultiply = 100;
+    previous_millis_cmd = millis();
+	 
 	  // Поднимем перед переключением + задержка для выполнения ретракта
-	  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
+	  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + zhop, current_position[E_AXIS], max_feedrate[Z_AXIS]/3, active_extruder);
 	  st_synchronize();
 	  
 	  //current_position[Z_AXIS] = current_position[Z_AXIS] +1;
 	 
 	  // 1. Переключить экструдеры
-	  sw_current_max = 0; // фиксируем максимальный ток (для отладки)
+	 // sw_current_max = 0; // фиксируем максимальный ток (для отладки)
 
 	  /*if(code_seen('W')) { // ограничение тока
 		  sw_current_limit = code_value(); 
@@ -5185,10 +5282,18 @@ void sw_do_change(int tmp_extruder) {
 	  int sve_active_extruder = active_extruder;
 	  current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][active_extruder] + extruder_offset[X_AXIS][tmp_extruder];
 	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][active_extruder] + extruder_offset[Y_AXIS][tmp_extruder];
+	
+	//nn
+	// Прибавляем смещения по Z с инверсией, т.к. Z в нуле
+	  current_position[Z_AXIS] = current_position[Z_AXIS] + extruder_offset[Z_AXIS][active_extruder] - extruder_offset[Z_AXIS][tmp_extruder];
+	  
+	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]+zhop, current_position[E_AXIS]);
+
 	  active_extruder = tmp_extruder;
+	  /*
 	  // Прибавляем смещения по Z с инверсией, т.к. экструдер уже переключен
-	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + extruder_offset[Z_AXIS][sve_active_extruder] - extruder_offset[Z_AXIS][tmp_extruder]+1, current_position[E_AXIS]);
-  
+	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + extruder_offset[Z_AXIS][sve_active_extruder] - extruder_offset[Z_AXIS][tmp_extruder]+zhop, current_position[E_AXIS]);
+  */
 	//Цикл переключения SW ========
 		//cli();   // disable interrupts
 		sw_timeout = 0;
@@ -5200,6 +5305,7 @@ void sw_do_change(int tmp_extruder) {
 				// ждем сигнала с датчика
 				if (!sw_on_timer_add && ((active_extruder == 0 && READ(SW_T0_PIN) == 0) || (active_extruder == 1 && READ(SW_T1_PIN) == 0))) {
 					//есть сигнал с датчика
+					sw_on_timer_show = millis() - sw_on_timer;
 					sw_on_timer = 0;
 					sw_on_timer_add = millis();
 				}
@@ -5214,11 +5320,44 @@ void sw_do_change(int tmp_extruder) {
 				}
 		}
 		WRITE(SW_EN_PIN, 0);
+		if (sw_timeout != 0) {
+			// не стопится только с устновленным ключем
+			if (READ(SERVICE_PIN) != 0) {
+				LCD_ALERTMESSAGEPGM("Err: SW Timeout     ");// . sw_timeout);			
+				//Stop(); //kill();
+			 cli(); // Stop interrupts
+			disable_heater();
+			disable_x();
+			disable_y();
+			disable_z();
+			disable_e0();
+			disable_e1();
+			disable_e2();	
+				
+		 // FMC small patch to update the LCD before ending
+		  sei();   // enable interrupts
+		  for ( int i=5; i--; lcd_update())
+		  {
+			 delay(200);	
+		  }
+		  cli();   // disable interrupts
+		  suicide();
+		  while(1) { /* Intentionally left empty */ } // Wait for reset		
+						
+			}
+		}
 	//END Цикл переключения SW ========
 
-	feedrate = oldFeedrate;
-	acceleration=DEFAULT_ACCELERATION;
-	max_xy_jerk=DEFAULT_XYJERK;
+	//feedrate = oldFeedrate;
+	//acceleration=DEFAULT_ACCELERATION;
+	//max_xy_jerk=DEFAULT_XYJERK;
+	
+	st_synchronize(); //?
+	
+	feedrate = saved_feedrate;
+    feedmultiply = saved_feedmultiply;
+    previous_millis_cmd = millis();
+  }
 }
 
 void sw_do_clean() {
@@ -5270,5 +5409,38 @@ void sw_do_clean() {
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS]);	  
         st_synchronize(); */
 }
+#else
+	void pro_do_change(int tmp_extruder) {
+	if (active_extruder != tmp_extruder) {
+	 float zhop = 1.28 ; // 0.32 = 16 шагов
+	 
+	/*saved_feedrate = feedrate;
+    saved_feedmultiply = feedmultiply;
+    feedmultiply = 100;
+    previous_millis_cmd = millis();*/
+	 
+	  // Поднимем перед переключением
+	  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + zhop, current_position[E_AXIS], max_feedrate[Z_AXIS]/3, active_extruder);
+	  st_synchronize();
 
+	  
+      // Set the new active extruder and position 
+	  int sve_active_extruder = active_extruder;
+	  current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][active_extruder] + extruder_offset[X_AXIS][tmp_extruder];
+	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][active_extruder] + extruder_offset[Y_AXIS][tmp_extruder];
+	
+	//nn
+	// Прибавляем смещения по Z с инверсией, т.к. Z в нуле
+	  current_position[Z_AXIS] = current_position[Z_AXIS] + extruder_offset[Z_AXIS][active_extruder] - extruder_offset[Z_AXIS][tmp_extruder];
+	  
+	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]+zhop, current_position[E_AXIS]);
+
+	active_extruder = tmp_extruder;
+	
+	/*feedrate = saved_feedrate;
+    feedmultiply = saved_feedmultiply;*/
+    //previous_millis_cmd = millis();
+  }
+}
+#endif
 #endif

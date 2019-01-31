@@ -16,13 +16,16 @@
 void init_fr_pasta();
 void init_dir_pasta();
 void init_pasta_steps();
+void load_filament();
 
 #if defined(FILAMENT_MONITOR)
 void init_filament_monitor();
 #endif
 #ifdef SW_EXTRUDER
+	void sw_do_calibrate_z();	
+#endif
+#if defined MAGNUM_PRO
 	void sw_do_calibrate();
-	void sw_do_calibrate_z();
 #endif
 #if defined(MGLASER)
 void init_laser();

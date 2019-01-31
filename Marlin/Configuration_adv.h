@@ -76,7 +76,13 @@
 
 #define EXTRUDER_0_AUTO_FAN_PIN   43
 #define EXTRUDER_2_AUTO_FAN_PIN   -1
-#define EXTRUDER_AUTO_FAN_TEMPERATURE 60
+
+#if defined(SW_EXTRUDER)
+	#define EXTRUDER_AUTO_FAN_TEMPERATURE 45
+#else
+	#define EXTRUDER_AUTO_FAN_TEMPERATURE 60
+#endif
+
 #define EXTRUDER_AUTO_FAN_SPEED   255  // == full speed
 #else
 //This is for controlling a fan to cool down the stepper drivers
@@ -319,15 +325,15 @@
 //#define MENU_ADDAUTOSTART
 
 // Show a progress bar on the LCD when printing from SD?
-//#define LCD_PROGRESS_BAR
+#define LCD_PROGRESS_BAR
 
 #ifdef LCD_PROGRESS_BAR
   // Amount of time (ms) to show the bar
-  #define PROGRESS_BAR_BAR_TIME 2000
+  #define PROGRESS_BAR_BAR_TIME 3000
   // Amount of time (ms) to show the status message
   #define PROGRESS_BAR_MSG_TIME 3000
   // Amount of time (ms) to retain the status message (0=forever)
-  #define PROGRESS_MSG_EXPIRE   0
+  #define PROGRESS_MSG_EXPIRE   3000
   // Enable this to show messages for MSG_TIME then hide them
   #define PROGRESS_MSG_ONCE
 #endif
@@ -471,8 +477,8 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 		#define FILAMENTCHANGE_FINISHRETRACTADD 0.008
 	#else
    		#define FILAMENTCHANGE_XPOS 80
-		#define FILAMENTCHANGE_YPOS 10
-    	#define FILAMENTCHANGE_ZADD 20
+		#define FILAMENTCHANGE_YPOS 3
+    	#define FILAMENTCHANGE_ZADD 10
     	#define FILAMENTCHANGE_FIRSTRETRACT -2
 		#define FILAMENTCHANGE_FINALRETRACT 0
 		// MG ретракт и анретракт после смены, при возврате к печати

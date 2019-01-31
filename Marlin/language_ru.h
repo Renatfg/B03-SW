@@ -39,13 +39,18 @@
 	#define MSG_MG_LASER_ON_OFF					"Тест"
 #endif
 	
-#if defined(SW_EXTRUDER)
-	#define MSG_SW_CHANGE_EXTRUDER				"Переключить сопло"
-	#define MSG_SW_EXTRUDER_MENU				"Экструдер SW"
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
 	#define	MSG_SW_CALIBRATE					"Калибровка сопел"
-	#define	MSG_SW_CALIBRATE_Z					"Калибровка по Z"
-	#define MSG_SW_TIMEADD						"Задержка"
-	#define MSG_SW_SERVICE						"Сервисное полож."
+	#if defined SW_EXTRUDER
+		#define	MSG_SW_CALIBRATE_Z					"Калибровка по Z"
+		#define MSG_SW_CHANGE_EXTRUDER				"Переключить сопло"
+		#define MSG_SW_TIMEADD						"Задержка"
+		#define MSG_SW_SERVICE						"Сервисное полож."
+		#define MSG_SW_EXTRUDER_MENU				"Экструдер SW"
+		#define MSG_LOAD_FILA						"Загрузить пластик"
+	#else
+		#define MSG_SW_EXTRUDER_MENU				"Экструдер PRO"
+	#endif
 #endif
 	
 	// MG -
@@ -167,7 +172,7 @@
 	#define MSG_CONTROL_RETRACT_RECOVER_SWAP	"unРетракт своп +:"
 	#define MSG_CONTROL_RETRACT_RECOVERF		"unРетракт V:"
 	#define MSG_AUTORETRACT						"Авто Ретракт:"
-	#define MSG_FILAMENTCHANGE 					"Заменить пруток"
+	#define MSG_FILAMENTCHANGE 					"Заменить пластик"
 	#define MSG_INIT_SDCARD 					" обновить "
 	#define MSG_CNG_SDCARD 						"Сменить  SD карту"
 	#define MSG_ZPROBE_OUT 						"Z probe out. bed"

@@ -409,7 +409,7 @@ void Config_ResetDefault()
 	float tmp01[]=EXTRUDER_OFFSET_Y;
 	extruder_offset[3] = tmp01[1];
 	#if defined SW_EXTRUDER
-	float tmp02[]=EXTRUDER_OFFSET_Y;
+	float tmp02[]=EXTRUDER_OFFSET_Z;
 	extruder_offset[5] = tmp02[1];
 	sw_time_add = 0;
 	#endif

@@ -142,12 +142,13 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5W" //нога SD карты и снова BED_LIMIT_SWITCHING, переведены BED_HEATING и др, 148 шагов на эккструдер.
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5Wa" //PIDBEDTEMP и fix THERMAL_RUNAWAY: https://github.com/MarlinFirmware/Marlin/commit/1e7b286addc6286d1576ae1a7b68eb2ee2bfb62d.
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5Wb" // исправлена ошибка в void thermal_runaway_protection
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1"
+ 
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T6a" // калибровка и сохранение, исправлена ошибка при замене пластика с вентиляторами
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1i"
  
  #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
 	#define SW_EXTRUDER
-	//#define OLD_ONE
  #endif
  
  // раскоментировать для включения опции
@@ -265,11 +266,15 @@
     #define PID_MAX 255
 	#undef PID_FUNCTIONAL_RANGE
 	#define PID_FUNCTIONAL_RANGE 20 // не уменьшать, или не будет работать PID
-	
-	#define  DEFAULT_Kp 12
-    #define  DEFAULT_Ki 0.8
-    #define  DEFAULT_Kd 44.5
-
+	#ifdef SW_EXTRUDER
+		#define  DEFAULT_Kp 22.0
+		#define  DEFAULT_Ki 2.0
+		#define  DEFAULT_Kd 61.5
+	#else
+		#define  DEFAULT_Kp 12
+		#define  DEFAULT_Ki 0.8
+		#define  DEFAULT_Kd 44.5
+	#endif
 #else
 // Ultimaker
     #define  DEFAULT_Kp 22.2
@@ -515,18 +520,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
  #define Z_MAX_POS_DEFAULT 200
  #define Z_MIN_POS_DEFAULT 0
 #elif defined(MAGNUM_PRO)
-	#if defined(SW_EXTRUDER) && defined(OLD_ONE)
-	//тестовый образец старый
-	 #define X_MAX_POS_DEFAULT 255
+	#if defined(SW_EXTRUDER)
+	 #define X_MAX_POS_DEFAULT 235
 	 #define X_MIN_POS_DEFAULT 0
-	 #define Y_MAX_POS_DEFAULT 150
-	 #define Y_MIN_POS_DEFAULT 0
-	 #define Z_MAX_POS_DEFAULT 180
-	 #define Z_MIN_POS_DEFAULT 0 
-	#elif defined(SW_EXTRUDER)
-	 #define X_MAX_POS_DEFAULT 250
-	 #define X_MIN_POS_DEFAULT 0
-	 #define Y_MAX_POS_DEFAULT 180
+	 #define Y_MAX_POS_DEFAULT 170
 	 #define Y_MIN_POS_DEFAULT 0
 	 #define Z_MAX_POS_DEFAULT 180
 	 #define Z_MIN_POS_DEFAULT 0 
@@ -760,21 +757,15 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
     #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
   #elif defined(MAGNUM_PRO)
-  	#if defined(SW_EXTRUDER) && defined(OLD_ONE)
-	//тестовый образец старый
-     #define MANUAL_X_HOME_POS 255
-     #define MANUAL_Y_HOME_POS 150
-     #define MANUAL_Z_HOME_POS 0
-	 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
-	#elif defined(SW_EXTRUDER)
-	 #define X_MAX_POS_DEFAULT 233
+  	#if defined(SW_EXTRUDER)
+	 #define X_MAX_POS_DEFAULT 235
 	 #define X_MIN_POS_DEFAULT 0
-	 #define Y_MAX_POS_DEFAULT 168
+	 #define Y_MAX_POS_DEFAULT 170
 	 #define Y_MIN_POS_DEFAULT 0
 	 #define Z_MAX_POS_DEFAULT 180
 	 #define Z_MIN_POS_DEFAULT 0 
-     #define MANUAL_X_HOME_POS 233
-     #define MANUAL_Y_HOME_POS 175
+     #define MANUAL_X_HOME_POS 235
+     #define MANUAL_Y_HOME_POS 170
      #define MANUAL_Z_HOME_POS 0
 	 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
 	#else

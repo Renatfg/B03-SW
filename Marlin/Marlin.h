@@ -257,10 +257,14 @@ extern unsigned char fanSpeedSoftPwm;
   extern unsigned long sw_on_timer;
   extern int sw_test;
   extern int sw_timeout;
-  extern int sw_calibrate_now;
   extern int sw_calibrate_z_now;
+  extern int reload_filament_sw;
+  extern int reload_filament_sw_ext;
 #endif
-
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
+  extern int sw_calibrate_now;
+#endif
+ extern int load_filament_now;
 #ifdef FWRETRACT
 extern bool autoretract_enabled;
 extern bool retracted[EXTRUDERS];

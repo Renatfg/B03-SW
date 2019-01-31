@@ -221,13 +221,15 @@ extern volatile uint16_t buttons;  //an extended version of the last checked but
 #define LCD_STR_BEDTEMP     "\x00"
 #define LCD_STR_DEGREE      "\x01"
 #define LCD_STR_THERMOMETER "\x02"
-#define LCD_STR_THERMOMETERA "\x03"
+//-#define LCD_STR_THERMOMETERA "\x03"
+#define LCD_STR_THERMOMETERA "\x07"
 //#define LCD_STR_UPLEVEL     "\x03"
 #define LCD_STR_UPLEVEL     "\x5E"  /* from the default character set */
 #define LCD_STR_REFRESH     "\x04"
 #define LCD_STR_FOLDER      "\x05"
 #define LCD_STR_FEEDRATE    "\x06"
-#define LCD_STR_CLOCK       "\x07"
+//-#define LCD_STR_CLOCK       "\x07"
+#define LCD_STR_CLOCK       "\x03"
 #define LCD_STR_ARROW_RIGHT "\x7E"  /* from the default character set */
 
 static void lcd_restore_symbols_magnum(
@@ -279,15 +281,14 @@ static void lcd_restore_symbols_magnum(
         B00100,
         B00000
     };
-	byte thermometera[8] =
-    {
-        B11011,
-        B11011,
-        B11011,
-        B11111,
-        B01010,
-        B01010,
-        B00100,
+	byte clock [8]={
+        B00000,
+        B01110,
+        B10011,
+        B10101,
+        B10001,
+        B01110,
+        B00000,
         B00000
     };
    /* byte uplevel[8]={
@@ -319,17 +320,7 @@ static void lcd_restore_symbols_magnum(
         B11111,
         B00000,
         B00000
-    }; //thanks joris
-   /* byte feedrate [8]={
-        B00000,
-        B11101,
-        B01110,
-        B00111,
-        B01011,
-        B10001,
-        B00000,
-        B00000
-    }; //MG */
+    };
 	byte feedrate [8]={
         B00010,
         B00100,
@@ -340,17 +331,18 @@ static void lcd_restore_symbols_magnum(
         B01000,
         B10000
     }; //MG
-    byte clock [8]={
-        B00000,
-        B01110,
-        B10011,
-        B10101,
-        B10001,
-        B01110,
-        B00000,
+    byte thermometera[8] =
+    {
+        B11011,
+        B11011,
+        B11011,
+        B11111,
+        B01010,
+        B01010,
+        B00100,
         B00000
-    }; //thanks Sonny Mounicou
-	/*
+    };
+	
 	#if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
     static bool char_mode = false;
     byte progress[3][8] = { {
@@ -387,15 +379,19 @@ static void lcd_restore_symbols_magnum(
       lcd.createChar(LCD_STR_DEGREE[0], degree);
       lcd.createChar(LCD_STR_THERMOMETER[0], thermometer);
 	  lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
+	  //lcd.createChar(LCD_STR_CLOCK[0], clock);
       lcd.createChar(LCD_STR_FEEDRATE[0], feedrate);
-      lcd.createChar(LCD_STR_CLOCK[0], clock);
+	  
+      
       if (progress_bar_set) {
         // Progress bar characters for info screen
         for (int i=3; i--;) lcd.createChar(LCD_STR_PROGRESS[i], progress[i]);
       }
       else {
         // Custom characters for submenus
-       // lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
+        //lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
+		//lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
+		lcd.createChar(LCD_STR_CLOCK[0], clock);
         lcd.createChar(LCD_STR_REFRESH[0], refresh);
         lcd.createChar(LCD_STR_FOLDER[0], folder);
       }
@@ -404,16 +400,16 @@ static void lcd_restore_symbols_magnum(
     lcd.createChar(LCD_STR_BEDTEMP[0], bedTemp);
     lcd.createChar(LCD_STR_DEGREE[0], degree);
     lcd.createChar(LCD_STR_THERMOMETER[0], thermometer);
-	lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
+	lcd.createChar(LCD_STR_CLOCK[0], clock);
     //lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
     lcd.createChar(LCD_STR_REFRESH[0], refresh);
     lcd.createChar(LCD_STR_FOLDER[0], folder);
     lcd.createChar(LCD_STR_FEEDRATE[0], feedrate);
-    lcd.createChar(LCD_STR_CLOCK[0], clock);
+	lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
   #endif
-	*/
-	// ORIGINAL
 	
+	// ORIGINAL
+	/*
 	lcd.createChar(LCD_STR_BEDTEMP[0], bedTemp);
     lcd.createChar(LCD_STR_DEGREE[0], degree);
     lcd.createChar(LCD_STR_THERMOMETER[0], thermometer);
@@ -423,10 +419,11 @@ static void lcd_restore_symbols_magnum(
     lcd.createChar(LCD_STR_FOLDER[0], folder);
     lcd.createChar(LCD_STR_FEEDRATE[0], feedrate);
     lcd.createChar(LCD_STR_CLOCK[0], clock);
-	
+	*/
     lcd.clear();
+	
 }
-
+/*
 static void lcd_set_custom_characters( //удалить! 
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
     bool progress_bar_set=true
@@ -486,7 +483,7 @@ static void lcd_set_custom_characters( //удалить!
         B00000,
         B00000,
         B00000
-    };*/
+    };
     byte refresh[8]={
         B00000,
         B00110,
@@ -572,7 +569,8 @@ static void lcd_set_custom_characters( //удалить!
       }
       else {
         // Custom characters for submenus
-       // lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
+        //lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
+		lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
         lcd.createChar(LCD_STR_REFRESH[0], refresh);
         lcd.createChar(LCD_STR_FOLDER[0], folder);
       }
@@ -582,14 +580,14 @@ static void lcd_set_custom_characters( //удалить!
     lcd.createChar(LCD_STR_DEGREE[0], degree);
     lcd.createChar(LCD_STR_THERMOMETER[0], thermometer);
 	lcd.createChar(LCD_STR_THERMOMETERA[0], thermometera);
-    //lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
+   // lcd.createChar(LCD_STR_UPLEVEL[0], uplevel);
     lcd.createChar(LCD_STR_REFRESH[0], refresh);
     lcd.createChar(LCD_STR_FOLDER[0], folder);
     lcd.createChar(LCD_STR_FEEDRATE[0], feedrate);
     lcd.createChar(LCD_STR_CLOCK[0], clock);
   #endif
 }
-
+*/
 int initnum = 0; // MG INIT LOGO SHOW TIME -1 for disable
 static void lcd_implementation_init(
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
@@ -623,12 +621,18 @@ static void lcd_implementation_init(
 
 //MG custom logo +
     
-	lcd_set_custom_characters(
+	/*lcd_set_custom_characters(
         #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-           // progress_bar_set
+            progress_bar_set
         #endif
-    );
-	
+    );*/
+	/*
+	lcd_restore_symbols_magnum(
+		#if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+            progress_bar_set
+        #endif
+	);
+	*/
 	if (initnum >= 0) {
 		byte magnum[8][8] = {
 			{
@@ -737,15 +741,21 @@ static void lcd_implementation_init(
 		lcd.print(LCD_STR_FEEDRATE[0]);
 		lcd.print(LCD_STR_CLOCK[0]);
 	} else {
-		lcd_restore_symbols_magnum();
+		/*lcd_restore_symbols_magnum();
 		lcd_set_custom_characters(
         #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-           // progress_bar_set
+            progress_bar_set
         #endif
-		);
-		/*
+		);*/
+		
 		lcd_restore_symbols_magnum(
 		#if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+            progress_bar_set
+        #endif
+		);
+		
+		/*lcd_set_custom_characters(
+        #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
             progress_bar_set
         #endif
 		);*/
@@ -805,8 +815,81 @@ static void lcd_implementation_status_screen()
 		lcd_restore_symbols_magnum();
 		initnum --;
 	}
-	// SW calibrate
-	#if defined SW_EXTRUDER
+	// загрузка прутка
+	if (load_filament_now > 0) {
+	//lcd.clear();
+	//lcd.setCursor(0, 0);
+		if (load_filament_now == 1) {
+		lcd.setCursor(0,0);
+		#if defined(MAGNUM_PRO)
+		lcd_printPGM(PSTR("< Замена прутка "));
+		if (active_extruder == 0) {
+			lcd_printPGM(PSTR("1"));
+		} else {
+			lcd_printPGM(PSTR("2"));
+		}
+		lcd.print(LCD_STR_THERMOMETERA[0]);
+		lcd_printPGM(PSTR(" >"));
+		#else
+			lcd_printPGM(PSTR("<   Замена прутка  >"));
+		#endif
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" нагрев экструдера  "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(" температура: "));
+		lcd.print(itostr3(int(degHotend(active_extruder)+0.5)));
+		lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("Пожалуйста подождите"));
+		} else if (load_filament_now == 2) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("<=  Замена прутка =>"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR("  Загрузите новый   "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(" пруток в экструдер "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("  ОК для завершения "));
+		} else if (load_filament_now == 3) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("<=  Замена прутка =>"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR("  Загрузите пруток  "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR("в экструдер до упора"));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("ОК для начала подачи"));
+		} else if (load_filament_now == 4) {
+		/*lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("<   Замена прутка  >"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Дождитесь загрузки "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR("пластика в экструдер"));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("ОК - чтобы завершить"));
+		*/
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("<=  Замена прутка =>"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR("<Пруток загружается>"));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR("Потяните вытекающий "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("пластик из сопла ..."));
+		
+		}
+	return; // не обновляем экран
+	}
+	
+	
+	
+	
+	
+	
+	
+	// SW and PRO calibrate
+	#if defined MAGNUM_PRO || defined SW_EXTRUDER
 	if (sw_calibrate_now > 0) {
 	//lcd.clear();
 	lcd.setCursor(0, 0);
@@ -849,6 +932,7 @@ static void lcd_implementation_status_screen()
 		}
 	return; // не обновляем экран
 	}
+	#if defined SW_EXTRUDER
 	if (sw_calibrate_z_now > 0) {
 	//lcd.clear();
 	lcd.setCursor(0, 0);
@@ -883,8 +967,11 @@ static void lcd_implementation_status_screen()
 	return; // не обновляем экран
 	}
 	#endif
+	#endif
 	//MG+ Filament Monitor и пауза печати
 	if (Filament_change_now > 0) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("<   Замена прутка  >"));
 		#if defined FILAMENT_MONITOR
 		if (load_failed) {
 			lcd.setCursor(0, 0);
@@ -931,14 +1018,39 @@ static void lcd_implementation_status_screen()
 				lcd_printPGM(PSTR("  Загрузите пруток! "));
 				lcd.setCursor(0, 3);
 				lcd_printPGM(PSTR(" Нажмите для печати "));
-			} else if (Filament_change_now == 2 ) { 
+			//} else if (Filament_change_now == 2 ) { 
+			} else { 
 				// Просто принята команда M600
-				lcd.setCursor(0, 1);
-				lcd_printPGM(PSTR("< Замените пруток  >"));
-				lcd.setCursor(0, 2);
-				lcd_printPGM(PSTR("   Нажмите OK для   "));
-				lcd.setCursor(0, 3);
-				lcd_printPGM(PSTR(" продолжения печати "));
+				#if defined SW_EXTRUDER
+					if (reload_filament_sw == 1 ) { 
+						lcd.setCursor(0,0);
+						lcd_printPGM(PSTR("<   Замена прутка  >"));
+						lcd.setCursor(0,1);
+						lcd_printPGM(PSTR(" Подготовьте пруток "));
+						lcd.setCursor(0,2);
+						lcd_printPGM(PSTR("    для загрузки    "));
+						lcd.setCursor(0,3);
+						lcd_printPGM(PSTR("ОК для начала подачи"));
+					} else if (reload_filament_sw == 2 ) { // загружаем
+						lcd.setCursor(0,0);
+						lcd_printPGM(PSTR("<   Замена прутка  >"));
+						lcd.setCursor(0,1);
+						lcd_printPGM(PSTR("  Загрузите новый   "));
+						lcd.setCursor(0,2);
+						lcd_printPGM(PSTR(" пруток в экструдер "));
+						lcd.setCursor(0,3);
+						lcd_printPGM(PSTR("ОК - чтобы завершить"));
+					} 
+					
+				
+				#else
+					lcd.setCursor(0, 1);
+					lcd_printPGM(PSTR("< Замените пруток  >"));
+					lcd.setCursor(0, 2);
+					lcd_printPGM(PSTR("   Нажмите OK для   "));
+					lcd.setCursor(0, 3);
+					lcd_printPGM(PSTR(" продолжения печати "));
+				#endif
 			}
 		}
 	return; // не обновляем экран
@@ -1109,8 +1221,9 @@ static void lcd_implementation_status_screen()
     lcd.print('%');
 #  endif//SDSUPPORT
 # endif//LCD_WIDTH > 19
-    lcd.setCursor(LCD_WIDTH - 6, 2);
-    lcd.print(LCD_STR_CLOCK[0]);
+    //lcd.setCursor(LCD_WIDTH - 6, 2);
+	lcd.setCursor(LCD_WIDTH - 5, 2);
+    //lcd.print(LCD_STR_CLOCK[0]);
     if(starttime != 0)
     {
         uint16_t time = millis()/60000 - starttime/60000;
@@ -1130,9 +1243,27 @@ static void lcd_implementation_status_screen()
   	lcd.setCursor(LCD_WIDTH - 1, 0);
 	lcd.print(" ");  
   
+  //MG SW для отладки SW
+  #ifdef SW_EXTRUDER
+	if (READ(SERVICE_PIN) == 0) {
+		extern unsigned long sw_on_timer_show;
+		//lcd_printPGM(PSTR("                    "));
+		lcd.setCursor(0, 3);
+		lcd_printPGM(PSTR("                    "));
+		lcd.setCursor(0, 3);
+		lcd_printPGM(PSTR("Время: "));
+		lcd.print(sw_on_timer_show);
+		lcd_printPGM(PSTR(" mc"));
+		if (sw_timeout) {
+			lcd_printPGM(PSTR(" TIMER!"));	
+		} else {lcd_printPGM(PSTR("       "));}
+	return;
+	}
+  #endif
   // Status message line at the bottom
   lcd.setCursor(0, LCD_HEIGHT - 1);
-
+  
+    
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
     if (card.isFileOpen()) {
       uint16_t mil = millis(), diff = mil - progressBarTick;
@@ -1167,7 +1298,7 @@ static void lcd_implementation_status_screen()
     }
   #endif //FILAMENT_LCD_DISPLAY
  // END if jam_detected
-	
+	/*
 	#ifdef SW_EXTRUDER
  	if (sw_test) {
 		lcd_printPGM(PSTR("                    "));
@@ -1179,9 +1310,10 @@ static void lcd_implementation_status_screen()
     }
 	#endif
 	#ifndef SW_EXTRUDER
-		//lcd.print(lcd_status_message);
+		lcd.print(lcd_status_message);
 	#endif
-	
+	*/
+	lcd.print(lcd_status_message);
 	//MG пруток для отладки
 	/*
 	lcd_printPGM(PSTR("                    "));
@@ -1202,7 +1334,7 @@ static void lcd_implementation_status_screen()
 		lcd_printPGM(PSTR(" TIMER!"));	
 	} else {lcd_printPGM(PSTR("       "));}
 	*/
-		
+	
 	
 	/*lcd_printPGM(PSTR("DIR"));
 	lcd.print(READ(SW_DIR_PIN));

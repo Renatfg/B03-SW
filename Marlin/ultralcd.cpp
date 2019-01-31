@@ -67,12 +67,24 @@ void copy_and_scalePID_d();
 
 /* Different menus */
 static void lcd_status_screen();
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
+int sw_calibrate_now;
 #ifdef SW_EXTRUDER
 static void sw_service_position();
 extern void sw_do_change(int temp_extruder);
-int sw_calibrate_now;
 int sw_calibrate_z_now;
+// замена прутка во время печати
+int reload_filament_sw;
+int reload_filament_sw_ext; // текущий экструдер
+// загрузка прутка при простое
+int load_filament_extr = 1; // какой экструдер + 1
+int load_filament_temp = 200; // температурадля замены
+#else
+extern void pro_do_change(int temp_extruder);
 #endif
+#endif
+
+int load_filament_now;
 #ifdef ULTIPANEL
 extern bool powersupply;
 static void lcd_main_menu();
@@ -86,6 +98,9 @@ static void lcd_control_temperature_preheat_abs_settings_menu();
 static void lcd_control_motion_menu();
 static void lcd_control_volumetric_menu();
 //MG
+#ifdef SW_EXTRUDER
+static void load_filament_menu();
+#endif
 static void lcd_control_mg_addons_menu();
 static void lcd_control_mg_pasta_menu();
 static void lcd_control_mg_filament_monitor_settings_menu();
@@ -230,9 +245,9 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
 
     // For LCD_PROGRESS_BAR re-initialize the custom characters
     #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-      //lcd_set_custom_characters(menu == lcd_status_screen);
-	  //lcd_restore_symbols_magnum(menu == lcd_status_screen);
-	  lcd_restore_symbols_magnum();
+     // lcd_set_custom_characters(menu == lcd_status_screen);
+	  lcd_restore_symbols_magnum(menu == lcd_status_screen);
+	 // lcd_restore_symbols_magnum();
     #endif
   }
 }
@@ -353,9 +368,11 @@ static void lcd_sdcard_resume() { card.startFileprint(); }
 
 static void lcd_sdcard_stop()
 {
+	 
+	card.pauseSDPrint();
+	
     card.sdprinting = false;
     card.closefile();
-    quickStop();
 	
     if(SD_FINISHED_STEPPERRELEASE)
     {
@@ -364,9 +381,41 @@ static void lcd_sdcard_stop()
     autotempShutdown();
 
 	cancel_heatup = true;
+	
+	quickStop();
+		//finishAndDisableSteppers();
+	  disable_x();
+	  disable_y();
+	  disable_z();
+	  disable_e0();
+	  disable_e1();
+	  disable_e2();
+	
+	setTargetHotend0(0);
+	setTargetHotend1(0);
+	setTargetBed(0);
+    fanSpeed = 0;
+	
 	//MG
-	//lcd_setstatus(MSG_PRINT_ABORTED);
+	// Поднимем и ретракт
+	// plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS]-1, max_feedrate[Z_AXIS]/3, active_extruder);
+	//  st_synchronize();
+	
+	//plan_buffer_line(MANUAL_X_HOME_POS + 10, MANUAL_Y_HOME_POS + 10, current_position[Z_AXIS] + 1, current_position[E_AXIS]-1, max_feedrate[X_AXIS]/2, active_extruder);
+	//st_synchronize();
+	
+	// домой
+	//enquecommand_P((PSTR("G91 ;Use Relative Coordinates")));
+	//enquecommand_P((PSTR("G1 Z2 F500")));
+	//enquecommand_P((PSTR("G90 ;set absolute coordinates")));
+	//enquecommand_P((PSTR("G1 Y150 F6000")));
+	//enquecommand_P((PSTR("G1 X180")));
+	//enquecommand_P((PSTR("G28 X")));
+	//process_commands();
+	//st_synchronize();
+
 	lcd_setstatus(WELCOME_MSG);
+	lcd_return_to_status();
 }
 
 /* Menu implementation */
@@ -374,25 +423,28 @@ static void lcd_main_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
-    if (movesplanned() || IS_SD_PRINTING)
+    //if (movesplanned() || IS_SD_PRINTING)
+	if (movesplanned() || IS_SD_PRINTING || card.isFileOpen())
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }else{
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
-#ifdef DELTA_CALIBRATION_MENU
-        MENU_ITEM(submenu, MSG_DELTA_CALIBRATE, lcd_delta_calibrate_menu);
-#endif // DELTA_CALIBRATION_MENU
+		MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
     }
-    MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
+    
 #ifdef SDSUPPORT
     if (card.cardOK)
     {
         if (card.isFileOpen())
         {
             if (card.sdprinting) {
-			//MG Смена филамента
+			//MG Смена филамента во время печати
 			MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_filament_change_now);
+			#if defined SW_EXTRUDER
+			//none
+			#else
 			MENU_ITEM(function, MSG_FILAMENTCHANGELATE, lcd_filament_change_late);
+			#endif
 			MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
 			} else {
             MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
@@ -441,7 +493,6 @@ void lcd_set_home_offsets()
 
 
 #ifdef BABYSTEPPING
-
   static void _lcd_babystep(int axis, const char *msg) {
     if (encoderPosition != 0) {
       babystepsTodo[axis] += (int)encoderPosition;
@@ -461,6 +512,7 @@ static void lcd_tune_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+	MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
     MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
 #if TEMP_SENSOR_0 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
@@ -663,6 +715,11 @@ static void lcd_prepare_menu() //Меню управление
 	} else {
 		MENU_ITEM(gcode, MSG_SW_CHANGE_EXTRUDER, PSTR("T0"));
 	}
+	if (!card.sdprinting) {
+	// смена прутка если остановлен
+	//MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
+	MENU_ITEM(submenu, MSG_LOAD_FILA, load_filament_menu);
+	}
 	#endif
 	MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
@@ -691,6 +748,22 @@ static void lcd_prepare_menu() //Меню управление
 	MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
     END_MENU();
 }
+
+#ifdef SW_EXTRUDER
+static void load_filament_menu() //Меню загрузки прутка
+{
+	//load_filament_extr = active_extruder + 1;
+	//load_filament_temp  = 200;
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN, lcd_prepare_menu);
+	//MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
+	MENU_ITEM_EDIT(int3, MSG_EXTRUDER_MENU, &load_filament_extr, 1, 2);
+	MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  EXTRUDE_MINTEMP + 2, HEATER_0_MAXTEMP - 15);
+	MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
+    END_MENU();
+}
+#endif
+
 
 #ifdef DELTA_CALIBRATION_MENU
 static void lcd_delta_calibrate_menu()
@@ -802,25 +875,35 @@ static void sw_extruder_menu()
 
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+	#if defined MAGNUM_PRO || defined SW_EXTRUDER
 	if (!movesplanned() && !IS_SD_PRINTING) { 
-	MENU_ITEM(function, MSG_SW_CALIBRATE, sw_do_calibrate);
-	MENU_ITEM(function, MSG_SW_CALIBRATE_Z, sw_do_calibrate_z);
+	 #if defined SW_EXTRUDER
+	  MENU_ITEM(function, MSG_SW_CALIBRATE, sw_do_calibrate);
+	  MENU_ITEM(function, MSG_SW_CALIBRATE_Z, sw_do_calibrate_z);
+	 #else
+	  MENU_ITEM(function, MSG_SW_CALIBRATE, sw_do_calibrate);
+	 #endif
 	}
+	#endif
 	MENU_ITEM_EDIT(float32, MSG_X_OFFSET, &extruder_offset[1], -12, 0);
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
-	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
 	#if defined SW_EXTRUDER
-	if (!movesplanned() && !IS_SD_PRINTING) { 
-	MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
+	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
+	if (READ(SERVICE_PIN) == 0) {
+	// показывается  только с установленным ключем
+		if (!movesplanned() && !IS_SD_PRINTING) { 
+		MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
+		}
+		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 50);
 	}
-	MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 60);
 	#endif
 	if (!movesplanned() && !IS_SD_PRINTING) {
-	MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
-    }
+		MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
+	}
+	
 	END_MENU();
 }
-
+#ifdef SW_EXTRUDER
 static void sw_service_position() {
 	// Начнем переключение
 	// ждем пропажи сигнала с датчика	
@@ -836,6 +919,7 @@ static void sw_service_position() {
 	}
 	WRITE(SW_EN_PIN, 0);
 }
+#endif
 #endif
 
 static void lcd_control_menu()
@@ -883,10 +967,13 @@ static void lcd_control_menu()
     END_MENU();
 }
 
-//MG Смена филамента
+//MG Смена филамента во время печати
 static void lcd_filament_change_now()
 {
 Filament_change_now = 1;
+#if defined SW_EXTRUDER
+	reload_filament_sw_ext = active_extruder; //запомним
+#endif
 lcd_return_to_status();
 }
 // MG суперпауза
@@ -1990,7 +2077,7 @@ void copy_and_scalePID_d()
 
 #endif //ULTRA_LCD
 
-#ifdef SW_EXTRUDER
+#if defined MAGNUM_PRO || defined SW_EXTRUDER
 void sw_do_calibrate() {
 	sw_calibrate_now = 1;
 	lcd_return_to_status();
@@ -1999,7 +2086,11 @@ void sw_do_calibrate() {
 	st_synchronize();
 	
 	// домой
-	sw_do_change(0);
+	#if defined SW_EXTRUDER
+		sw_do_change(0);
+	#else
+		pro_do_change(0);
+	#endif
 	enquecommand_P((PSTR("G28")));
 	process_commands();
 	lcd_return_to_status();
@@ -2019,6 +2110,8 @@ void sw_do_calibrate() {
 	st_synchronize();
 	
 	sw_calibrate_now = 2; // установите крестик
+	delay(300);
+	lcd_ignore_click();
 	while(!lcd_clicked()){
 		manage_heater();
 		manage_inactivity(true);
@@ -2026,7 +2119,11 @@ void sw_do_calibrate() {
 	}
 	
 	sw_calibrate_now = 3;
-	sw_do_change(1);
+	#if defined SW_EXTRUDER
+		sw_do_change(1);
+	#else
+		pro_do_change(1);
+	#endif
 	lcd_return_to_status();
 	
 	// в рабочую точку
@@ -2047,7 +2144,8 @@ void sw_do_calibrate() {
 	acceleration=10;
 	max_xy_jerk=1;
 	encoderPosition = 0;
-	//delay(300);
+	delay(300);
+	lcd_ignore_click();
 	while(!lcd_clicked()){
 		if (encoderPosition != 0) {
 		refresh_cmd_timeout();
@@ -2064,7 +2162,8 @@ void sw_do_calibrate() {
 	sw_calibrate_now = 4;
 	encoderPosition = 0;
 	
-	delay(500);
+	delay(300);
+	lcd_ignore_click();
 	while(!lcd_clicked()){
 		if (encoderPosition != 0) {
 		refresh_cmd_timeout();
@@ -2091,12 +2190,23 @@ void sw_do_calibrate() {
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
 	st_synchronize();
 	
+	#if defined SW_EXTRUDER
+		sw_do_change(0);
+	#else
+		pro_do_change(0);
+	#endif
+	//finishAndDisableSteppers(); не пашет
+	disable_x();
+	disable_y();
+	disable_z();
+	disable_e0();
+	disable_e1();
+	disable_e2();
 	sw_calibrate_now = 0;
-	sw_do_change(0);
 	lcd_setstatus(WELCOME_MSG);
 	lcd_return_to_status();
 }
-
+#if defined SW_EXTRUDER
 void sw_do_calibrate_z() {
 	sw_calibrate_z_now = 1;
 	lcd_return_to_status();
@@ -2198,5 +2308,130 @@ void sw_do_calibrate_z() {
 	sw_do_change(0);
 	lcd_setstatus(WELCOME_MSG);
 	lcd_return_to_status();
+}
+#endif
+#endif
+#ifdef SW_EXTRUDER
+void load_filament() {
+	load_filament_now = 1;
+	lcd_return_to_status();
+	// при хоминге может поменяться
+	//int load_extruder = active_extruder; 
+	
+	disable_e0();
+    disable_e1();
+
+	// если был включен нагрев - запомним
+	//int tTarget=int(degTargetHotend(load_extruder) + 0.5);
+	
+	/*if (degTargetHotend(load_extruder) == 0) {
+		setTargetHotend(200,load_extruder);
+		tTarget = 200;
+	}*/
+	setTargetHotend(load_filament_temp,load_filament_extr - 1);
+	sw_do_change(load_filament_extr - 1);
+	
+	/*
+	if (active_extruder == 0) {
+		setTargetHotend0(200);
+	} else {
+		setTargetHotend1(200);
+	} 
+	*/
+	// Поднимем перед хомингом
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	// домой
+	enquecommand_P((PSTR("G28")));
+	process_commands();
+	lcd_return_to_status();
+	
+	// вернем нужный экструдер
+		//sw_do_change(load_extruder);
+		sw_do_change(load_filament_extr - 1);
+
+	// Поднимем перед передвижением в рабочую точку
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
+	st_synchronize();
+
+	// в рабочую точку
+	plan_buffer_line(100.0, 5.0, current_position[Z_AXIS] + 40, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+	current_position[X_AXIS] = 100;
+	current_position[Y_AXIS] = 5;
+	current_position[Z_AXIS] = 41;
+	plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], 0);
+	
+	plan_set_e_position(0);
+	current_position[E_AXIS] = 0;
+	delay(300);
+	lcd_ignore_click();
+	//while((degHotend(active_extruder) + 0.5) < tTarget){
+		while((degHotend(active_extruder) + 0.5) < load_filament_temp){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	// Нагрето
+	load_filament_now = 2; 	
+	
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS] + 500, 3.0, active_extruder);
+			
+	// Ждем нажатия или 500мм чтобы прекратить подачу
+	delay(300);
+	lcd_ignore_click();
+	//|| (current_position[E_AXIS] + 500) != (st_get_position(E_AXIS)/axis_steps_per_unit[E_AXIS]) // не работает
+
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	plan_discard_current_block();
+	current_block = NULL;
+	current_position[E_AXIS] = st_get_position(E_AXIS)/axis_steps_per_unit[E_AXIS];
+	plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+	// Ретракт
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS] - 1, 100.0, active_extruder);
+	st_synchronize();
+	
+	
+	/*
+	// загружаем 20мм (работало)
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS] + 20, 3, active_extruder);
+	st_synchronize();
+	
+	while((current_position[E_AXIS] + 20) != (st_get_position(E_AXIS)/axis_steps_per_unit[E_AXIS])){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	*/
+	
+	if (active_extruder == 0) {
+		setTargetHotend0(0);
+	} else {
+		setTargetHotend1(0);
+	} 
+	
+	plan_set_e_position(0);
+	current_position[E_AXIS] = 0;
+	
+	// Переключим экструдер (заткнем)
+	if (active_extruder == 0) {
+		sw_do_change(1);
+		} else {
+		sw_do_change(0);
+	}
+	plan_set_e_position(0);
+	
+	// домой (почему-то хомится сам)
+	plan_buffer_line(current_position[X_AXIS] + 3, current_position[Y_AXIS]+3, current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+		
+	lcd_setstatus(WELCOME_MSG);
+	lcd_return_to_status();
+	load_filament_now = 0; //Все
 }
 #endif
