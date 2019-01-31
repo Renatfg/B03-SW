@@ -403,6 +403,7 @@ void Config_RetrieveSettings()
 
 void Config_ResetDefault()
 {
+	/*
 	#if defined MAGNUM_PRO || defined SW_EXTRUDER
 	float tmp0[]=EXTRUDER_OFFSET_X;
 	extruder_offset[1] = tmp0[1];
@@ -414,6 +415,7 @@ void Config_ResetDefault()
 	sw_time_add = 0;
 	#endif
 	#endif
+	*/
   
     float tmp1[]=DEFAULT_AXIS_STEPS_PER_UNIT;
     float tmp2[]=DEFAULT_MAX_FEEDRATE;
