@@ -143,8 +143,8 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5Wa" //PIDBEDTEMP и fix THERMAL_RUNAWAY: https://github.com/MarlinFirmware/Marlin/commit/1e7b286addc6286d1576ae1a7b68eb2ee2bfb62d.
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5Wb" // исправлена ошибка в void thermal_runaway_protection
  
- //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T6a" // калибровка и сохранение, исправлена ошибка при замене пластика с вентиляторами
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1i"
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T6b" // калибровка и сохранение, исправлена ошибка при замене пластика с вентиляторами
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
  
  #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
