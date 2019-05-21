@@ -161,11 +161,12 @@ extern bool pasta_dir_enabled;
 #define X_STOP_PIN         35
 #define Y_STOP_PIN         12 //8 for B01
 
-#if defined(AUTO_IR_PROBE) || defined(AUTO_IND_PROBE)
+#define Z_STOP_PIN         36 // стандартный микрик
+/*#if defined(AUTO_MI_PROBE)
 	#define Z_STOP_PIN         37 // E3_DIR_PIN (вывод 4 внешнего разъема)
 #else
 	#define Z_STOP_PIN         36 // стандартный микрик
-#endif
+#endif*/
 
 #define SDSS               20
 #define SDCARDDETECT       15//27

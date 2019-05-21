@@ -453,11 +453,11 @@ bool cancel_heatup = false ;
   int sw_current=0;
   int sw_current_max=0;
   int sw_current_limit=800; // 800 - по факту отключает осечку по току переопределяется в команде T* W300
-  int sw_test=0; // зацикливает переключение для теста
+  unsigned long sw_test=0; // зацикливает переключение для теста и счетчик
   unsigned long sw_on_timer = 0;
   unsigned long sw_on_timer_show = 0; // для отладки
   unsigned long sw_on_timer_add = 0;
-  unsigned long sw_time_limit = 450; // 0.45 секунды защита переключения
+  unsigned long sw_time_limit = 500; // 0.5 секунды защита переключения
   unsigned long sw_time_add = 30; // доп время для захода на самофиксацию
   int sw_timeout = 0; // единица если переключение было прервано по таймеру а не датчику
   int sw_switching_now = 0; // чтобы не входило повторно в цикл
@@ -615,14 +615,13 @@ void setup_homepin(void)
 #endif
 }
 
-
+#if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
 void setup_photpin()
 {
-  #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
     SET_OUTPUT(PHOTOGRAPH_PIN);
     WRITE(PHOTOGRAPH_PIN, LOW);
-  #endif
 }
+#endif
 
 void setup_powerhold()
 {
@@ -746,7 +745,9 @@ void setup()
   dac_init(); //Initialize DAC to set stepper current
 #endif
   st_init();    // Initialize stepper, this enables interrupts!
+#if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
   setup_photpin();
+#endif  
   servo_init();
   
  // MG перенесено выше
@@ -786,7 +787,7 @@ volatile uint8_t Filament_change_now = 0;
 
 void loop()
 {
-  #ifdef SW_EXTRUDER
+  /*#ifdef SW_EXTRUDER
     if (sw_test) {
 	  // sw_on_timer = millis();
 	  sw_test++;
@@ -798,6 +799,17 @@ void loop()
 		//manage_inactivity(true);
         lcd_update();
 		delay(300);
+    }
+  #endif*/
+  #ifdef SW_EXTRUDER
+    if (sw_test and !sw_switching_now) {
+        lcd_update();
+		delay(1000);
+		if (active_extruder == 0) {
+		 sw_do_change(1);
+		} else {
+		 sw_do_change(0);
+		}
     }
   #endif
    
@@ -1298,9 +1310,11 @@ static void do_blocking_move_to(float x, float y, float z) {
     feedrate = oldFeedRate;
 }
 
+/* 
 static void do_blocking_move_relative(float offset_x, float offset_y, float offset_z) {
     do_blocking_move_to(current_position[X_AXIS] + offset_x, current_position[Y_AXIS] + offset_y, current_position[Z_AXIS] + offset_z);
 }
+*/
 
 static void setup_for_endstop_move() {
     saved_feedrate = feedrate;
@@ -4693,6 +4707,7 @@ for (int s = 1; s <= steps; s++) {
     else if (dual_x_carriage_mode == DXC_AUTO_PARK_MODE) // handle unparking of head
     {
       if (current_position[E_AXIS] == destination[E_AXIS])
+      if (current_position[E_AXIS] == destination[E_AXIS])
       {
         // this is a travel move - skit it but keep track of current position (so that it can later
         // be used as start of first non-travel move)
@@ -5225,7 +5240,9 @@ void calculate_volumetric_multipliers() {
 #ifdef SW_EXTRUDER
 void sw_do_change(int tmp_extruder) {
   if (active_extruder != tmp_extruder) {
-	sw_switching_now = 1; // чтобы не входило повторно в цикл
+	disable_e0();
+    disable_e1();
+	sw_switching_now = 1; // для теста
 	 float zhop = 1.28 ; // 0.32 = 16 шагов
  	// float oldFeedrate = feedrate;
 	// float Z_pos = current_position[Z_AXIS];
@@ -5258,6 +5275,7 @@ void sw_do_change(int tmp_extruder) {
 		//digitalWrite(SW_EN_PIN, 1); - не работает!
 		WRITE(SW_EN_PIN, 1);
 		sw_on_timer = millis();
+		if (sw_test and tmp_extruder == 0 and !sw_switching_now) { sw_test++; }
 	  }
 	  
 	  //old
@@ -5308,15 +5326,18 @@ void sw_do_change(int tmp_extruder) {
 					sw_on_timer_show = millis() - sw_on_timer;
 					sw_on_timer = 0;
 					sw_on_timer_add = millis();
+					sw_switching_now = 0;
 				}
 				//Проверим не слишком ли долго крутит
 				if (!sw_on_timer_add && sw_on_timer + sw_time_limit < millis()) {
 					sw_on_timer = 0; 
 					sw_timeout = 1;
+					sw_switching_now = 0;
 				}
 				//Дополнительное время для самофиксации
 				if (sw_on_timer_add + sw_time_add < millis()) {
 					sw_on_timer_add = 0; 
+					sw_switching_now = 0;
 				}
 		}
 		WRITE(SW_EN_PIN, 0);

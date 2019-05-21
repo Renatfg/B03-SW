@@ -93,17 +93,17 @@ static void lcd_prepare_menu();
 static void lcd_move_menu();
 static void lcd_control_menu();
 static void lcd_control_temperature_menu();
-static void lcd_control_temperature_preheat_pla_settings_menu();
-static void lcd_control_temperature_preheat_abs_settings_menu();
+//static void lcd_control_temperature_preheat_pla_settings_menu();
+//static void lcd_control_temperature_preheat_abs_settings_menu();
 static void lcd_control_motion_menu();
-static void lcd_control_volumetric_menu();
+//static void lcd_control_volumetric_menu();
 //MG
 #ifdef SW_EXTRUDER
 static void load_filament_menu();
 #endif
 static void lcd_control_mg_addons_menu();
 static void lcd_control_mg_pasta_menu();
-static void lcd_control_mg_filament_monitor_settings_menu();
+//static void lcd_control_mg_filament_monitor_settings_menu();
 static void lcd_control_mg_laser_settings_menu();
 
 static void lcd_filament_change_now(); //MG Смена филамента 
@@ -486,8 +486,8 @@ void lcd_set_home_offsets()
     plan_set_position(0.0, 0.0, 0.0, current_position[E_AXIS]);
 
     // Audio feedback
-    enquecommand_P(PSTR("M300 S659 P200"));
-    enquecommand_P(PSTR("M300 S698 P200"));
+    //enquecommand_P(PSTR("M300 S659 P200"));
+    //enquecommand_P(PSTR("M300 S698 P200"));
     lcd_return_to_status();
 }
 
@@ -849,11 +849,13 @@ static void lcd_move_menu_1mm()
     move_menu_scale = 1.0;
     lcd_move_menu_axis();
 }
+
 static void lcd_move_menu_01mm()
 {
     move_menu_scale = 0.1;
     lcd_move_menu_axis();
 }
+
 
 static void lcd_move_menu()
 {
@@ -933,11 +935,13 @@ static void lcd_control_menu()
 	MENU_ITEM(submenu, MSG_EXTRUDER_MENU, sw_extruder_menu);
 	#endif
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+	/*
 	#if MOTHERBOARD == 555 // MG
 	// это меню не нужно
 	#else
 	MENU_ITEM(submenu, MSG_VOLUMETRIC, lcd_control_volumetric_menu);
 	#endif
+	*/
 
 #ifdef DOGLCD
 //    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
@@ -988,7 +992,6 @@ lcd_return_to_status();
 static void lcd_control_mg_addons_menu()
 {
 	START_MENU();
-	//MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
 	MENU_ITEM(back, MSG_MG_EXTEND, lcd_control_menu);
 	MENU_ITEM(submenu, MSG_MG_PASTA_MENU, lcd_control_mg_pasta_menu);
 	//MG Laser
@@ -1116,6 +1119,7 @@ static void lcd_control_temperature_menu()
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
+/*
 #if MOTHERBOARD == 555 // MG
 // это меню не нужно
 #else
@@ -1135,6 +1139,7 @@ static void lcd_control_temperature_menu()
 # endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
 #endif // MOTHERBOARD 555 MG
+*/
 /*
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
@@ -1217,7 +1222,7 @@ static void lcd_control_motion_menu()
     END_MENU();
 }
 
-
+/*
 static void lcd_control_volumetric_menu()
 {
 	START_MENU();
@@ -1237,7 +1242,7 @@ static void lcd_control_volumetric_menu()
 
 	END_MENU();
 }
-
+*/
 
 #ifdef DOGLCD
 static void lcd_set_contrast()

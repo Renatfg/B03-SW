@@ -144,7 +144,8 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T5Wb" // исправлена ошибка в void thermal_runaway_protection
  
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T6b" // калибровка и сохранение, исправлена ошибка при замене пластика с вентиляторами
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1g" // disable_e0(); disable_e1();
  
  #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
@@ -156,8 +157,12 @@
  //#define FILAMENT_MONITOR;
  
  // Автокалибровка
- // #define AUTO_IR_PROBE; //при помощи ИР датчика
- //	#define AUTO_IND_PROBE; //при помощи емкосного NPN NO
+/* #define AUTO_MI_PROBE
+  #define DISABLE_M503
+  #define X_PROBE_OFFSET_FROM_EXTRUDER -70
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 0
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -2
+*/
 
  // Лазер на внешнем разъеме
  #define MGLASER
@@ -439,11 +444,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #else
 const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-	#ifdef AUTO_IR_PROBE // not for AUTO_IND_PROBE
-		const bool Z_MIN_ENDSTOP_INVERTING = false;
-	#else
-		const bool Z_MIN_ENDSTOP_INVERTING = true;
-	#endif
+const bool Z_MIN_ENDSTOP_INVERTING = true;
 #endif
 
 const bool X_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
@@ -521,7 +522,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
  #define Z_MIN_POS_DEFAULT 0
 #elif defined(MAGNUM_PRO)
 	#if defined(SW_EXTRUDER)
-	 #define X_MAX_POS_DEFAULT 235
+	 #define X_MAX_POS_DEFAULT 240
 	 #define X_MIN_POS_DEFAULT 0
 	 #define Y_MAX_POS_DEFAULT 170
 	 #define Y_MIN_POS_DEFAULT 0
@@ -592,7 +593,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
 //#define Z_PROBE_REPEATABILITY_TEST  // If not commented out, Z-Probe Repeatability test will be included if Auto Bed Leveling is Enabled.
 
-#if defined(AUTO_IR_PROBE) || defined(AUTO_IND_PROBE)
+#if defined(AUTO_MI_PROBE)
 	#define ENABLE_AUTO_BED_LEVELING
 	//#define Z_PROBE_REPEATABILITY_TEST не хватает уже памяти!
 #endif
@@ -758,16 +759,18 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
     #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
   #elif defined(MAGNUM_PRO)
   	#if defined(SW_EXTRUDER)
-	 #define X_MAX_POS_DEFAULT 235
+	 #define X_MAX_POS_DEFAULT 240
 	 #define X_MIN_POS_DEFAULT 0
 	 #define Y_MAX_POS_DEFAULT 170
 	 #define Y_MIN_POS_DEFAULT 0
 	 #define Z_MAX_POS_DEFAULT 180
 	 #define Z_MIN_POS_DEFAULT 0 
-     #define MANUAL_X_HOME_POS 235
+     #define MANUAL_X_HOME_POS 240
      #define MANUAL_Y_HOME_POS 170
      #define MANUAL_Z_HOME_POS 0
 	 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
+	 //16.04.2019 тест не оч, переливает вроде
+	 //#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 152}
 	#else
      #define MANUAL_X_HOME_POS 220
      #define MANUAL_Y_HOME_POS 180
@@ -784,7 +787,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
   #endif
 
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,3000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+//#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,3000}
+//16.04.2019
+#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}
 
 #if defined(MAGNUM_PRO)
  #define DEFAULT_MAX_FEEDRATE          {120, 120, 15, 200}    // (mm/sec)
@@ -810,8 +815,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
  #define DEFAULT_XYJERK                10.0    // (mm/sec)
 #endif
 #define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
-
-#define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+//#define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
 #define DEFAULT_EJERK                 5.0    // (mm/sec)

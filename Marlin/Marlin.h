@@ -255,7 +255,7 @@ extern unsigned char fanSpeedSoftPwm;
   extern int sw_current; //значение тока
   extern int sw_current_max; // Максимальное значение тока, для отладки
   extern unsigned long sw_on_timer;
-  extern int sw_test;
+  extern unsigned long sw_test;
   extern int sw_timeout;
   extern int sw_calibrate_z_now;
   extern int reload_filament_sw;

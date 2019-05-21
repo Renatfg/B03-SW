@@ -1245,9 +1245,20 @@ static void lcd_implementation_status_screen()
   
   //MG SW для отладки SW
   #ifdef SW_EXTRUDER
+	if (sw_test) {
+		extern unsigned long sw_on_timer_show;
+		lcd.setCursor(0, 3);
+		lcd_printPGM(PSTR("                    "));
+		lcd.setCursor(0, 3);
+		lcd_printPGM(PSTR("Вр: "));
+		lcd.print(sw_on_timer_show);
+		//lcd_printPGM(PSTR(" mc"));
+		lcd_printPGM(PSTR(" Cnt: "));
+		lcd.print(sw_test);
+	return;
+	}
 	if (READ(SERVICE_PIN) == 0) {
 		extern unsigned long sw_on_timer_show;
-		//lcd_printPGM(PSTR("                    "));
 		lcd.setCursor(0, 3);
 		lcd_printPGM(PSTR("                    "));
 		lcd.setCursor(0, 3);
