@@ -5239,9 +5239,7 @@ void calculate_volumetric_multipliers() {
 #if defined MAGNUM_PRO || defined SW_EXTRUDER
 #ifdef SW_EXTRUDER
 void sw_do_change(int tmp_extruder) {
-  if (active_extruder != tmp_extruder) {
-	disable_e0();
-    disable_e1();
+  if (!sw_switching_now && active_extruder != tmp_extruder) {
 	sw_switching_now = 1; // для теста
 	 float zhop = 1.28 ; // 0.32 = 16 шагов
  	// float oldFeedrate = feedrate;
@@ -5270,6 +5268,8 @@ void sw_do_change(int tmp_extruder) {
 	  //old
 	  
 	  if ((tmp_extruder == 0 && READ(SW_T0_PIN) == 1) || (tmp_extruder == 1 && READ(SW_T1_PIN) == 1)) {
+		disable_e0();
+		disable_e1();
 		// 8801
 		digitalWrite(SW_DIR_PIN, tmp_extruder);
 		//digitalWrite(SW_EN_PIN, 1); - не работает!
