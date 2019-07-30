@@ -3930,7 +3930,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		static float ttemp1;
 		#endif
 		static float tbed;
-		static float tfan;
+		static int tfan;
 		static bool tactive;
 		
 		ttemp = degTargetHotend(0);

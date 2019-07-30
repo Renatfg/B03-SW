@@ -145,7 +145,12 @@
  
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-T6b" // калибровка и сохранение, исправлена ошибка при замене пластика с вентиляторами
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1g" // disable_e0(); disable_e1();
+ 
+ //h1 версия
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-sw-h1" // disable_e0(); disable_e1();
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-uni-h1" // disable_e0(); disable_e1()
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-pro-h1" // disable_e0(); disable_e1();
+ 
  
  #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
