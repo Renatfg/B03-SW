@@ -108,16 +108,16 @@
 #if MOTHERBOARD == 555
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
-  //#define MAGNUM_UNI
-  //#define MACHINE_MODEL "UNI"
+  #define MAGNUM_UNI
+  #define MACHINE_MODEL "UNI"
   //#define MAGNUM_PRO
   //#define MACHINE_MODEL "PRO"
   //#define MAGNUM_EDU
   //#define MACHINE_MODEL "EDU"
   //#define MODUS
   //#define MACHINE_MODEL "MODUS-A"
-  #define MAGNUM_TT
-  #define MACHINE_MODEL "TT"
+  //#define MAGNUM_TT
+  //#define MACHINE_MODEL "TT"
   //#define M2000
   //#define MACHINE_MODEL "M2000A"
 
@@ -147,8 +147,8 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
  
  //h1 версия
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-sw-h1" // disable_e0(); disable_e1();
- //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-uni-h1" // disable_e0(); disable_e1()
+ //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-sw-h1" // disable_e0(); disable_e1();
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-uni-h1" // disable_e0(); disable_e1()
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-pro-h1" // disable_e0(); disable_e1();
  
  

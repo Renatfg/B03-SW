@@ -205,6 +205,42 @@
 //=============================public variables=============================
 //===========================================================================
 //MG ++
+/*
+int print_lines (float xstart, float ystart, float xprint, float yprint, float eprint, float xstep, float ystep, int points, float shift, int travel, int feed) {
+		// xprint - длина линии
+		// xstep - сместить следующую линию относительно предыдущей
+		// points - всего линий !!!Только четные числа!!!
+		// делает на 1 больше т.т нужна центральная
+		// shift смещение
+		String gcode;
+		
+		// Смещение прибавляем с одного края
+		// поэтому берем половину и смещаем каждую линию
+		static float add;
+		if ( shift != 0 ) add = shift * points / 2;
+		if ( xstep != 0 ) xstart = xstart + add;
+		if ( ystep != 0 ) ystart = ystart + add;
+		
+		for (short i=1;i<points+2;i++) {
+			// в начальную точку
+			gcode = gcode + "G1 X" + String(xstart) + " Y" + String(ystart) + " F" + travel + "\n"; 
+			// печать
+			gcode = gcode + "G1 E0 F1800\n"; // unretract и сброс
+			gcode = gcode + "G1 X" + String(xstart + xprint) + " Y" + String(ystart + yprint) + " E" + String(eprint) + " F" + feed + "; Line: " + i + " Shift:" + shift + " startAdd: " + add + "\n";
+			gcode = gcode + "G92 E0\nG1 E-2.8 F1800\n"; // retract
+			//в новую точку
+			xstart = xstart + xstep; // теперь это начальная точка
+			ystart = ystart + ystep; 
+			
+			// смещение
+			if ( xstep != 0 ) xstart = xstart - shift;
+			if ( ystep != 0 ) ystart = ystart - shift;
+			
+		SERIAL_PROTOCOLLN(gcode);
+		gcode = "";
+		}	
+	} 
+*/
 //MG Filament Monitor
 #if defined(FILAMENT_MONITOR)
 bool filament_monitor_enabled;
@@ -4297,6 +4333,36 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 				
 	#endif
       } else {
+		// линии калибровки тест +
+		//SERIAL_PROTOCOLPGM("G1 X100 Y 100 F200;\n");
+		/*
+		int xstart = 195;
+		int ystart = 135;
+		int xstart2 = 60; // начало втрого блока по х
+		int xystep = -3; // 3 мм между полосками
+		int xyline = -15; // 15 мм длина полоски
+		int xyspace = -15; // расстояние между блоками
+		int xylines = 40; // всего линий (только четное)
+		
+		// квадрат обводка
+		// в начальную точку
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart) + " Y" + String(ystart) + " F1200\n"); 
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart + xylines*xystep) + " Y" + String(ystart) + " E5.0 F1200; \n");
+		
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart) + " Y" + String(ystart+xyline) + " F1200\n"); 
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart + xylines*xystep) + " Y" + String(ystart+xyline) + " E5.0 F1200; \n");
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart) + " Y" + String(ystart+xyline*2) + " F1200\n"); 
+		SERIAL_PROTOCOLLN ("G1 X" + String(xstart + xylines*xystep) + " Y" + String(ystart+xyline*2) + " E5.0 F1200; \n");
+		
+		print_lines(xstart,ystart, 0,xyline,3.0,xystep,0,xylines, 0,6000,1200);//горизонтально 
+		print_lines(xstart2, ystart,xyline, 0,3.0,0,xystep,xylines, 0,6000,1200);
+		SERIAL_PROTOCOLLN("T1");
+		// смещаем 0.01мм
+		print_lines(xstart,ystart+xyline, 0,xyline,3.0,xystep,0,xylines, 0.01,6000,1200);//горизонтально 
+		print_lines(xstart2+xyline, ystart,xyline, 0,3.0,0,xystep,xylines, 0.01,6000,1200);
+		*/
+		// линии калибровки тест --
+		
 		//Pasta Extruder & Laser Status
 		SERIAL_PROTOCOLPGM("Magnum Addons status:\n");
 		//SERIAL_PROTOCOLLN("");

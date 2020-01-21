@@ -47,14 +47,14 @@
 		#define MSG_SW_TIMEADD						"Задержка"
 		#define MSG_SW_SERVICE						"Сервисное полож."
 		#define MSG_SW_EXTRUDER_MENU				"Экструдер SW"
-		#define MSG_LOAD_FILA						"Загрузить пластик"
 	#else
 		#define MSG_SW_EXTRUDER_MENU				"Экструдер PRO"
 	#endif
 #endif
+
 	
 	// MG -
-
+	#define MSG_LOAD_FILA						"Загрузить пластик"
 	#define WELCOME_MSG 				        "-= готов к печати =-"
 	#define MSG_SD_INSERTED						"SD карта установлена"
 	#define MSG_SD_REMOVED						"SD карта извлечена"

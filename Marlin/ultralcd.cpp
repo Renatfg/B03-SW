@@ -77,12 +77,14 @@ int sw_calibrate_z_now;
 int reload_filament_sw;
 int reload_filament_sw_ext; // текущий экструдер
 // загрузка прутка при простое
-int load_filament_extr = 1; // какой экструдер + 1
-int load_filament_temp = 200; // температурадля замены
+
 #else
 extern void pro_do_change(int temp_extruder);
 #endif
 #endif
+
+int load_filament_extr = 1; // какой экструдер + 1
+int load_filament_temp = 220; // температура для замены пластика
 
 int load_filament_now;
 #ifdef ULTIPANEL
@@ -700,6 +702,23 @@ void lcd_cooldown()
     lcd_return_to_status();
 }
 
+static void load_filament_menu() //Меню загрузки прутка
+{
+	//load_filament_extr = active_extruder + 1;
+	//load_filament_temp  = 200;
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN, lcd_prepare_menu);
+	//MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
+	#if defined MAGNUM_PRO || defined SW_EXTRUDER
+		MENU_ITEM_EDIT(int3, MSG_EXTRUDER_MENU, &load_filament_extr, 1, 2);
+	#endif	
+	
+	set_extrude_min_temp(80); // для воска
+	MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  EXTRUDE_MINTEMP + 2, HEATER_0_MAXTEMP - 15);
+	MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
+    END_MENU();
+}
+
 static void lcd_prepare_menu() //Меню управление
 {
     START_MENU();
@@ -715,12 +734,11 @@ static void lcd_prepare_menu() //Меню управление
 	} else {
 		MENU_ITEM(gcode, MSG_SW_CHANGE_EXTRUDER, PSTR("T0"));
 	}
-	if (!card.sdprinting) {
-	// смена прутка если остановлен
-	//MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
-	MENU_ITEM(submenu, MSG_LOAD_FILA, load_filament_menu);
-	}
 	#endif
+	if (!card.sdprinting) {
+		// смена прутка если остановлен
+		MENU_ITEM(submenu, MSG_LOAD_FILA, load_filament_menu);
+	}
 	MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
 	MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
@@ -748,22 +766,6 @@ static void lcd_prepare_menu() //Меню управление
 	MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
     END_MENU();
 }
-
-#ifdef SW_EXTRUDER
-static void load_filament_menu() //Меню загрузки прутка
-{
-	//load_filament_extr = active_extruder + 1;
-	//load_filament_temp  = 200;
-    START_MENU();
-    MENU_ITEM(back, MSG_MAIN, lcd_prepare_menu);
-	//MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
-	MENU_ITEM_EDIT(int3, MSG_EXTRUDER_MENU, &load_filament_extr, 1, 2);
-	MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  EXTRUDE_MINTEMP + 2, HEATER_0_MAXTEMP - 15);
-	MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
-    END_MENU();
-}
-#endif
-
 
 #ifdef DELTA_CALIBRATION_MENU
 static void lcd_delta_calibrate_menu()
@@ -2316,7 +2318,7 @@ void sw_do_calibrate_z() {
 }
 #endif
 #endif
-#ifdef SW_EXTRUDER
+
 void load_filament() {
 	load_filament_now = 1;
 	lcd_return_to_status();
@@ -2334,8 +2336,9 @@ void load_filament() {
 		tTarget = 200;
 	}*/
 	setTargetHotend(load_filament_temp,load_filament_extr - 1);
-	sw_do_change(load_filament_extr - 1);
-	
+	#ifdef SW_EXTRUDER
+		sw_do_change(load_filament_extr - 1);
+	#endif
 	/*
 	if (active_extruder == 0) {
 		setTargetHotend0(200);
@@ -2353,9 +2356,9 @@ void load_filament() {
 	lcd_return_to_status();
 	
 	// вернем нужный экструдер
-		//sw_do_change(load_extruder);
+	#ifdef SW_EXTRUDER
 		sw_do_change(load_filament_extr - 1);
-
+	#endif
 	// Поднимем перед передвижением в рабочую точку
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
 	st_synchronize();
@@ -2423,12 +2426,14 @@ void load_filament() {
 	plan_set_e_position(0);
 	current_position[E_AXIS] = 0;
 	
+	#ifdef SW_EXTRUDER
 	// Переключим экструдер (заткнем)
 	if (active_extruder == 0) {
 		sw_do_change(1);
 		} else {
 		sw_do_change(0);
 	}
+	#endif
 	plan_set_e_position(0);
 	
 	// домой (почему-то хомится сам)
@@ -2439,4 +2444,3 @@ void load_filament() {
 	lcd_return_to_status();
 	load_filament_now = 0; //Все
 }
-#endif
