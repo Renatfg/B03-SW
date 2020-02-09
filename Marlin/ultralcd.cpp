@@ -714,7 +714,9 @@ static void load_filament_menu() //Меню загрузки прутка
 	#endif	
 	
 	set_extrude_min_temp(80); // для воска
-	MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  EXTRUDE_MINTEMP + 2, HEATER_0_MAXTEMP - 15);
+	//define EXTRUDE_MINTEMP 78;
+	//MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  EXTRUDE_MINTEMP + 2, HEATER_0_MAXTEMP - 15);
+	MENU_ITEM_EDIT(int3, MSG_NOZZLE, &load_filament_temp,  82, HEATER_0_MAXTEMP - 15);
 	MENU_ITEM(function, MSG_LOAD_FILA, load_filament);
     END_MENU();
 }

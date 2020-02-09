@@ -38,8 +38,22 @@ extern float extruder_offset[];
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
 //#define EEPROM_VERSION "V13"
-#define EEPROM_VERSION "V14" // SW and PRO offsets
+//#define EEPROM_VERSION "V14" // SW and PRO offsets
 #define EEPROM_VERSION "V15" // SW Z offset
+							   // добавил запись в пустые ячейки, строка 139
+
+/*
+Менять верисю нельзя - обнулится задержка!
+Надо делать процедуру.
+
+#if defined SW_EXTRUDER
+	#define EEPROM_VERSION "S16"
+#elif defined MAGNUM_PRO
+	#define EEPROM_VERSION "P16"
+#else 
+	#define EEPROM_VERSION "U16"
+#endif
+*/
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() 
@@ -120,13 +134,25 @@ void Config_StoreSettings()
   #endif
   
   #if defined MAGNUM_PRO || defined SW_EXTRUDER
-  EEPROM_WRITE_VAR(i, extruder_offset[1]);
-  EEPROM_WRITE_VAR(i, extruder_offset[3]);
-  #if defined SW_EXTRUDER
-  EEPROM_WRITE_VAR(i, extruder_offset[5]);
-  EEPROM_WRITE_VAR(i, sw_time_add);
+	EEPROM_WRITE_VAR(i, extruder_offset[1]);
+	EEPROM_WRITE_VAR(i, extruder_offset[3]);
+	#if defined SW_EXTRUDER
+		EEPROM_WRITE_VAR(i, extruder_offset[5]);
+		EEPROM_WRITE_VAR(i, sw_time_add);
+	#else
+		float dummy = 0.0f;
+		EEPROM_WRITE_VAR(i, dummy);
+		EEPROM_WRITE_VAR(i, dummy);
+	#endif
+  #else 
+	float dummy = 0.0f;	  
+	EEPROM_WRITE_VAR(i, dummy);
+	EEPROM_WRITE_VAR(i, dummy);
+	EEPROM_WRITE_VAR(i, dummy);
+	EEPROM_WRITE_VAR(i, dummy);
   #endif
-  #endif
+
+
   
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -295,7 +321,7 @@ SERIAL_ECHOLNPGM("Scaling factors:");
 
 
 #ifdef EEPROM_SETTINGS
-void Config_RetrieveSettings()
+void EEPROM_WRITE_VAR(i, dummy);EEPROM_WRITE_VAR(i, dummy);()
 {
     int i=EEPROM_OFFSET;
     char stored_ver[4];
@@ -383,6 +409,8 @@ void Config_RetrieveSettings()
   #if defined SW_EXTRUDER
   EEPROM_READ_VAR(i, extruder_offset[5]);
   EEPROM_READ_VAR(i, sw_time_add);
+  // проверим. пока такая затычка
+  if (sw_time_add < 1 OR sw_time_add > 100) sw_time_add = 33;
   #endif
   #endif
 		calculate_volumetric_multipliers();

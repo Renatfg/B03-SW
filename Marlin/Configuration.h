@@ -108,10 +108,17 @@
 #if MOTHERBOARD == 555
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
-  #define MAGNUM_UNI
-  #define MACHINE_MODEL "UNI"
-  //#define MAGNUM_PRO
-  //#define MACHINE_MODEL "PRO"
+
+  //#define MAGNUM_UNI
+  //define MACHINE_MODEL "UNI"
+
+  #define MAGNUM_PRO
+  #define MACHINE_MODEL "PRO"
+   #if defined(MAGNUM_PRO)
+	// Переключающийся экструдер
+	#define SW_EXTRUDER
+   #endif
+
   //#define MAGNUM_EDU
   //#define MACHINE_MODEL "EDU"
   //#define MODUS
@@ -147,15 +154,8 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
  
  //h1 версия
- //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-sw-h1" // disable_e0(); disable_e1();
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-uni-h1" // disable_e0(); disable_e1()
- //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-pro-h1" // disable_e0(); disable_e1();
- 
- 
- #if defined(MAGNUM_PRO)
-	// Переключающийся экструдер
-	#define SW_EXTRUDER
- #endif
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1b"
+
  
  // раскоментировать для включения опции
  // Монитор прутка с кнопкой
@@ -788,7 +788,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
     #define MANUAL_Y_HOME_POS 180
     #define MANUAL_Z_HOME_POS 0
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
+    //#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
+	// прошивка H1b 30.01.2020
+	#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
   #endif
 
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
