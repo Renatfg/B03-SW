@@ -264,7 +264,9 @@ extern unsigned char fanSpeedSoftPwm;
 #if defined MAGNUM_PRO || defined SW_EXTRUDER
   extern int sw_calibrate_now;
 #endif
+
  extern int load_filament_now;
+ extern int bed_level_now;
 #ifdef FWRETRACT
 extern bool autoretract_enabled;
 extern bool retracted[EXTRUDERS];

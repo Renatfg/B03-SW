@@ -87,6 +87,8 @@ int load_filament_extr = 1; // какой экструдер + 1
 int load_filament_temp = 220; // температура для замены пластика
 
 int load_filament_now;
+int bed_level_now;
+
 #ifdef ULTIPANEL
 extern bool powersupply;
 static void lcd_main_menu();
@@ -107,6 +109,7 @@ static void lcd_control_mg_addons_menu();
 static void lcd_control_mg_pasta_menu();
 //static void lcd_control_mg_filament_monitor_settings_menu();
 static void lcd_control_mg_laser_settings_menu();
+static void bed_level();
 
 static void lcd_filament_change_now(); //MG Смена филамента 
 static void lcd_filament_change_late(); //суперпауза
@@ -721,7 +724,7 @@ static void load_filament_menu() //Меню загрузки прутка
     END_MENU();
 }
 
-static void lcd_prepare_menu() //Меню управление
+static void lcd_prepare_menu() // ************** Меню управление
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
@@ -928,17 +931,28 @@ static void sw_service_position() {
 #endif
 #endif
 
-static void lcd_control_menu()
+static void lcd_control_menu() // ******** Меню Настроить принтер
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+	if (!movesplanned() && !IS_SD_PRINTING) 
+    {
+    MENU_ITEM(function, MSG_BED_LEVEL, bed_level);	 
+	}
+		
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+	MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+	
+	if (!movesplanned() && !IS_SD_PRINTING) 
+    {
 	#ifdef SW_EXTRUDER
 	MENU_ITEM(submenu, MSG_SW_EXTRUDER_MENU, sw_extruder_menu);
 	#elif defined(MAGNUM_PRO)
 	MENU_ITEM(submenu, MSG_EXTRUDER_MENU, sw_extruder_menu);
 	#endif
-    MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+    MENU_ITEM(submenu, MSG_MG_EXTEND, lcd_control_mg_addons_menu);
+    }
+
 	/*
 	#if MOTHERBOARD == 555 // MG
 	// это меню не нужно
@@ -954,10 +968,9 @@ static void lcd_control_menu()
 #ifdef FWRETRACT
     MENU_ITEM(submenu, MSG_RETRACT, lcd_control_retract_menu);
 #endif
-#if MOTHERBOARD == 555 // MG
 	if (!movesplanned() && !IS_SD_PRINTING) 
     {
-     MENU_ITEM(submenu, MSG_MG_EXTEND, lcd_control_mg_addons_menu);
+     //
     }
 	else 
 	{
@@ -966,7 +979,7 @@ static void lcd_control_menu()
 	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_FILAMENT_MONITOR, &filament_monitor_enabled, monitor_on_off);
 	#endif
 	}
-#endif
+
 #ifdef EEPROM_SETTINGS
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
@@ -2425,9 +2438,6 @@ void load_filament() {
 		setTargetHotend1(0);
 	} 
 	
-	plan_set_e_position(0);
-	current_position[E_AXIS] = 0;
-	
 	#ifdef SW_EXTRUDER
 	// Переключим экструдер (заткнем)
 	if (active_extruder == 0) {
@@ -2436,8 +2446,10 @@ void load_filament() {
 		sw_do_change(0);
 	}
 	#endif
-	plan_set_e_position(0);
 	
+	plan_set_e_position(0);
+	current_position[E_AXIS] = 0;
+
 	// домой (почему-то хомится сам)
 	plan_buffer_line(current_position[X_AXIS] + 3, current_position[Y_AXIS]+3, current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
 	st_synchronize();
@@ -2445,4 +2457,178 @@ void load_filament() {
 	lcd_setstatus(WELCOME_MSG);
 	lcd_return_to_status();
 	load_filament_now = 0; //Все
+}
+
+void bed_level() {
+	bed_level_now = 1;
+	lcd_return_to_status();
+	
+	disable_e0();
+    disable_e1();
+
+	//setTargetHotend(140,0);
+	setTargetHotend0(210);
+	setTargetBed(65);
+	#ifdef SW_EXTRUDER
+		sw_do_change(0);
+	#endif
+
+	// Поднимем перед хомингом
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 1, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	// домой
+	enquecommand_P((PSTR("G28")));
+	process_commands();
+	lcd_return_to_status();
+	
+	// Поднимем перед передвижением
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], max_feedrate[Z_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	// ==== в точку нагрева
+	current_position[X_AXIS] = 125;
+	current_position[Y_AXIS] = 5;
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	
+	// ждем нагрева
+	while(isHeatingHotend(active_extruder)){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	while( isHeatingBed() ){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	
+	// Давим
+	plan_set_e_position(0);
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS] + 10, 3.0, active_extruder);
+	// Ретракт
+	plan_set_e_position(0);
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS] - 5, 30.0, active_extruder);
+	st_synchronize();
+	plan_set_e_position(0);
+//	current_position[E_AXIS] = st_get_position(E_AXIS)/axis_steps_per_unit[E_AXIS];
+//	plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS]);
+	
+	//Ждем юзера - вытираем сопло
+	bed_level_now = 2;
+	lcd_return_to_status();
+	lcd_ignore_click();
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	bed_level_now = 3;
+	lcd_return_to_status();
+		
+
+	// ==== в 1 точку
+	current_position[X_AXIS] = 125;
+	current_position[Y_AXIS] = 155;
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	//Опустим
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 2, active_extruder);
+	st_synchronize();
+	
+	//Ждем юзера
+	lcd_return_to_status();
+	lcd_ignore_click();
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	bed_level_now = 4;
+	lcd_return_to_status();
+	//поднимем 
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	
+	// ==== в 2 точку
+	current_position[X_AXIS] = 217;
+	current_position[Y_AXIS] = 8;
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	//Опустим
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 2, active_extruder);
+	
+	//Ждем юзера
+	lcd_return_to_status();
+	lcd_ignore_click();
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	bed_level_now = 5;
+	lcd_return_to_status();
+	//поднимем 
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	
+	// ==== в 3 точку
+	current_position[X_AXIS] = 36;
+	current_position[Y_AXIS] = 8;
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	//Опустим
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 2, active_extruder);
+	
+	//Ждем юзера
+	lcd_return_to_status();
+	lcd_ignore_click();
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	bed_level_now = 6;
+	lcd_return_to_status();
+	//поднимем 
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	
+	// ==== СНОВА  в 1 точку
+	current_position[X_AXIS] = 125;
+	current_position[Y_AXIS] = 155;
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	//Опустим
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 2, active_extruder);
+	st_synchronize();
+	
+	//Ждем юзера
+	lcd_return_to_status();
+	lcd_ignore_click();
+	while(!lcd_clicked()){
+		manage_heater();
+		manage_inactivity(true);
+		lcd_update();
+	}
+	bed_level_now = 0; //Все
+	lcd_return_to_status();
+	
+	setTargetHotend0(0);
+	setTargetBed(0);
+	
+	//поднимем 
+	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
+	st_synchronize();
+	
+	//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS]);
+	//enable_endstops(true);
+	endstops_hit_on_purpose();
+	
+	lcd_setstatus(WELCOME_MSG);
+	return;
 }

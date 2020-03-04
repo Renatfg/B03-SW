@@ -815,6 +815,67 @@ static void lcd_implementation_status_screen()
 		lcd_restore_symbols_magnum();
 		initnum --;
 	}
+	
+	// Калибровка стола
+	if (bed_level_now > 0) {
+		if (bed_level_now == 1) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR("     Идет нагрев    "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(" стола и экструдера "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("Пожалуйста подождите"));
+		} else if (bed_level_now == 2 ) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Аккуратно очистите "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR("  сопло от пластика "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("    ОК - Начать     "));
+		} else if (bed_level_now == 3 ) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Отрегулируйте стол "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(">центральным< винтом"));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("ОК - следующая точка"));
+		} else if (bed_level_now == 4 ) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Отрегулируйте стол "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(" винтом справа ===> "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("ОК - следующая точка"));
+		} else if (bed_level_now == 5 ) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Отрегулируйте стол "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(" <=== винтом слева  "));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("ОК - следующая точка"));
+		} else if (bed_level_now == 6 ) {
+		lcd.setCursor(0,0);
+		lcd_printPGM(PSTR("* Калибровка стола *"));
+		lcd.setCursor(0,1);
+		lcd_printPGM(PSTR(" Отрегулируйте стол "));
+		lcd.setCursor(0,2);
+		lcd_printPGM(PSTR(">центральным< винтом"));
+		lcd.setCursor(0,3);
+		lcd_printPGM(PSTR("  ОК - завершить    "));
+		}
+	return; // не обновляем экран
+	}
+	
 	// загрузка прутка
 	if (load_filament_now > 0) {
 	//lcd.clear();
@@ -881,12 +942,6 @@ static void lcd_implementation_status_screen()
 		}
 	return; // не обновляем экран
 	}
-	
-	
-	
-	
-	
-	
 	
 	// SW and PRO calibrate
 	#if defined MAGNUM_PRO || defined SW_EXTRUDER

@@ -321,7 +321,7 @@ SERIAL_ECHOLNPGM("Scaling factors:");
 
 
 #ifdef EEPROM_SETTINGS
-void EEPROM_WRITE_VAR(i, dummy);EEPROM_WRITE_VAR(i, dummy);()
+void Config_RetrieveSettings()
 {
     int i=EEPROM_OFFSET;
     char stored_ver[4];
@@ -410,7 +410,7 @@ void EEPROM_WRITE_VAR(i, dummy);EEPROM_WRITE_VAR(i, dummy);()
   EEPROM_READ_VAR(i, extruder_offset[5]);
   EEPROM_READ_VAR(i, sw_time_add);
   // проверим. пока такая затычка
-  if (sw_time_add < 1 OR sw_time_add > 100) sw_time_add = 33;
+  if (sw_time_add < 1 OR sw_time_add > 50) sw_time_add = 33;
   #endif
   #endif
 		calculate_volumetric_multipliers();

@@ -54,6 +54,7 @@
 
 	
 	// MG -
+	#define MSG_BED_LEVEL						"Калибровка стола"
 	#define MSG_LOAD_FILA						"Загрузить пластик"
 	#define WELCOME_MSG 				        "-= готов к печати =-"
 	#define MSG_SD_INSERTED						"SD карта установлена"

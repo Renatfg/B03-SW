@@ -109,11 +109,11 @@
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
 
-  //#define MAGNUM_UNI
-  //define MACHINE_MODEL "UNI"
+  #define MAGNUM_UNI
+  #define MACHINE_MODEL "UNI"
 
-  #define MAGNUM_PRO
-  #define MACHINE_MODEL "PRO"
+  //#define MAGNUM_PRO
+  //#define MACHINE_MODEL "PRO"
    #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
 	#define SW_EXTRUDER
