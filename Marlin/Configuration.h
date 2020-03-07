@@ -109,11 +109,11 @@
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
 
-  #define MAGNUM_UNI
-  #define MACHINE_MODEL "UNI"
+  //#define MAGNUM_UNI
+  //#define MACHINE_MODEL "UNI"
 
-  //#define MAGNUM_PRO
-  //#define MACHINE_MODEL "PRO"
+  #define MAGNUM_PRO
+  #define MACHINE_MODEL "PRO"
    #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
 	#define SW_EXTRUDER
@@ -154,7 +154,7 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
  
  //h1 версия
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1b"
+ #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1c"
 
  
  // раскоментировать для включения опции
@@ -170,7 +170,7 @@
 */
 
  // Лазер на внешнем разъеме
- #define MGLASER
+ //#define MGLASER
  
  #define TEMP_SENSOR_0 1
 

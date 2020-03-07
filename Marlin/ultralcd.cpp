@@ -2529,8 +2529,13 @@ void bed_level() {
 		
 
 	// ==== в 1 точку
-	current_position[X_AXIS] = 125;
-	current_position[Y_AXIS] = 155;
+	#if defined(MAGNUM_UNI)
+		current_position[X_AXIS] = 125;
+		current_position[Y_AXIS] = 155;	
+	#else //SW
+		current_position[X_AXIS] = 100;
+		current_position[Y_AXIS] = 155;
+	#endif
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 40, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
 	st_synchronize();
 	
@@ -2553,8 +2558,13 @@ void bed_level() {
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
 	
 	// ==== в 2 точку
-	current_position[X_AXIS] = 217;
-	current_position[Y_AXIS] = 8;
+	#if defined(MAGNUM_UNI)
+		current_position[X_AXIS] = 217;
+		current_position[Y_AXIS] = 8;
+	#else //SW
+		current_position[X_AXIS] = 191;
+		current_position[Y_AXIS] = 8;
+	#endif
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
 	st_synchronize();
 	
@@ -2575,8 +2585,13 @@ void bed_level() {
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
 	
 	// ==== в 3 точку
-	current_position[X_AXIS] = 36;
-	current_position[Y_AXIS] = 8;
+	#if defined(MAGNUM_UNI)
+		current_position[X_AXIS] = 36;
+		current_position[Y_AXIS] = 8;	
+	#else //SW
+		current_position[X_AXIS] = 11;
+		current_position[Y_AXIS] = 8;
+	#endif
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
 	st_synchronize();
 	
@@ -2597,8 +2612,13 @@ void bed_level() {
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[Z_AXIS]/2, active_extruder);
 	
 	// ==== СНОВА  в 1 точку
-	current_position[X_AXIS] = 125;
-	current_position[Y_AXIS] = 155;
+	#if defined(MAGNUM_UNI)
+		current_position[X_AXIS] = 125;
+		current_position[Y_AXIS] = 155;	
+	#else //SW
+		current_position[X_AXIS] = 110;
+		current_position[Y_AXIS] = 155;
+	#endif
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 3, current_position[E_AXIS], manual_feedrate[X_AXIS]/2, active_extruder);
 	st_synchronize();
 	

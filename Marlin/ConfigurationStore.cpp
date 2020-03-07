@@ -410,7 +410,7 @@ void Config_RetrieveSettings()
   EEPROM_READ_VAR(i, extruder_offset[5]);
   EEPROM_READ_VAR(i, sw_time_add);
   // проверим. пока такая затычка
-  if (sw_time_add < 1 OR sw_time_add > 50) sw_time_add = 33;
+if (sw_time_add < 1 || sw_time_add > 50) sw_time_add = 33;
   #endif
   #endif
 		calculate_volumetric_multipliers();
