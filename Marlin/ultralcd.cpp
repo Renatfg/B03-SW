@@ -900,10 +900,10 @@ static void sw_extruder_menu()
 	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
 	if (READ(SERVICE_PIN) == 0) {
 	// показывается  только с установленным ключем
+		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 50);
 		if (!movesplanned() && !IS_SD_PRINTING) { 
 		MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
 		}
-		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD, &sw_time_add, 0, 50);
 	}
 	#endif
 	if (!movesplanned() && !IS_SD_PRINTING) {

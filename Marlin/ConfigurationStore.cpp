@@ -405,14 +405,27 @@ void Config_RetrieveSettings()
 
   #if defined MAGNUM_PRO || defined SW_EXTRUDER
   EEPROM_READ_VAR(i, extruder_offset[1]);
-  EEPROM_READ_VAR(i, extruder_offset[3]);
-  #if defined SW_EXTRUDER
-  EEPROM_READ_VAR(i, extruder_offset[5]);
-  EEPROM_READ_VAR(i, sw_time_add);
-  // проверим. пока такая затычка
-if (sw_time_add < 1 || sw_time_add > 50) sw_time_add = 33;
+  if (int(extruder_offset[1]) < 7 || int(extruder_offset[1]) > 40) {
+  // пока такая затычка нужны т.к. если прошить сначала
+  // другой прошивкой новую плату, то начинаются проблемы	  
+	#if defined SW_EXTRUDER
+	  extruder_offset[1] = 9;
+	#else
+	  extruder_offset[1] = 45;
+	#endif
+	extruder_offset[3] = 0;
+	extruder_offset[5] = 0;
+	sw_time_add = 33;
+  } else {
+  // все норм
+   EEPROM_READ_VAR(i, extruder_offset[3]);  
+   #if defined SW_EXTRUDER
+   EEPROM_READ_VAR(i, extruder_offset[5]);
+   EEPROM_READ_VAR(i, sw_time_add);
+   #endif
+  }
   #endif
-  #endif
+
 		calculate_volumetric_multipliers();
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
