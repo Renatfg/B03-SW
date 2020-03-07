@@ -44,7 +44,8 @@
 	#if defined SW_EXTRUDER
 		#define	MSG_SW_CALIBRATE_Z					"Калибровка по Z"
 		#define MSG_SW_CHANGE_EXTRUDER				"Переключить сопло"
-		#define MSG_SW_TIMEADD						"Задержка"
+		#define MSG_SW_TIMEADD_0					"Задержка прав."
+		#define MSG_SW_TIMEADD_1					"Задержка левый"
 		#define MSG_SW_SERVICE						"Сервисное полож."
 		#define MSG_SW_EXTRUDER_MENU				"Экструдер SW"
 	#else

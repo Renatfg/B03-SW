@@ -29,7 +29,8 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 
 #define EEPROM_OFFSET 100
 
-extern unsigned long sw_time_add;
+extern unsigned long sw_time_add_0;
+extern unsigned long sw_time_add_1;
 extern float extruder_offset[];
 // IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
 // in the functions below, also increment the version number. This makes sure that
@@ -138,7 +139,8 @@ void Config_StoreSettings()
 	EEPROM_WRITE_VAR(i, extruder_offset[3]);
 	#if defined SW_EXTRUDER
 		EEPROM_WRITE_VAR(i, extruder_offset[5]);
-		EEPROM_WRITE_VAR(i, sw_time_add);
+		EEPROM_WRITE_VAR(i, sw_time_add_0);
+		EEPROM_WRITE_VAR(i, sw_time_add_1);
 	#else
 		float dummy = 0.0f;
 		EEPROM_WRITE_VAR(i, dummy);
@@ -184,8 +186,10 @@ void Config_PrintSettings()
 	#if defined SW_EXTRUDER
 	SERIAL_ECHOPAIR("  M218 T1 Z", extruder_offset[5]);
 	SERIAL_ECHOLN("");
-	SERIAL_ECHOLNPGM("SW Extruder Time:");
-	SERIAL_ECHOPAIR("  S", sw_time_add);
+	SERIAL_ECHOLNPGM("SW Extruder 0 Time:");
+	SERIAL_ECHOPAIR("  S", sw_time_add_0);
+	SERIAL_ECHOLNPGM("SW Extruder 1 Time:");
+	SERIAL_ECHOPAIR("  S", sw_time_add_1);
 	#endif
 	#endif
   
@@ -415,13 +419,15 @@ void Config_RetrieveSettings()
 	#endif
 	extruder_offset[3] = 0;
 	extruder_offset[5] = 0;
-	sw_time_add = 33;
+	sw_time_add_0 = 33;
+	sw_time_add_1 = 33;
   } else {
   // все норм
    EEPROM_READ_VAR(i, extruder_offset[3]);  
    #if defined SW_EXTRUDER
    EEPROM_READ_VAR(i, extruder_offset[5]);
-   EEPROM_READ_VAR(i, sw_time_add);
+   EEPROM_READ_VAR(i, sw_time_add_0);
+   EEPROM_READ_VAR(i, sw_time_add_1);
    #endif
   }
   #endif

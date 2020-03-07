@@ -494,7 +494,8 @@ bool cancel_heatup = false ;
   unsigned long sw_on_timer_show = 0; // для отладки
   unsigned long sw_on_timer_add = 0;
   unsigned long sw_time_limit = 500; // 0.5 секунды защита переключения
-  unsigned long sw_time_add = 30; // доп время для захода на самофиксацию
+  unsigned long sw_time_add_0 = 30; // доп время для захода на самофиксацию
+  unsigned long sw_time_add_1 = 30; // доп время для захода на самофиксацию
   int sw_timeout = 0; // единица если переключение было прервано по таймеру а не датчику
   int sw_switching_now = 0; // чтобы не входило повторно в цикл
 #else
@@ -4457,6 +4458,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         }
       }
     #if EXTRUDERS > 1
+	/*
 	 #ifdef SW_EXTRUDER
 		if(code_seen('S')) { // задержка отключения
 		  sw_time_add = code_value(); //60 - 70 хорошее значение, 2000 = 2сек
@@ -4465,6 +4467,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		  sw_test = code_value(); 
 		}
 	 #endif		
+	*/
     if(tmp_extruder != active_extruder) {
         // Save current position to return to after applying extruder offset
         memcpy(destination, current_position, sizeof(destination));
@@ -5401,7 +5404,7 @@ void sw_do_change(int tmp_extruder) {
 					sw_switching_now = 0;
 				}
 				//Дополнительное время для самофиксации
-				if (sw_on_timer_add + sw_time_add < millis()) {
+				if ( (active_extruder == 0 && sw_on_timer_add + sw_time_add_1 < millis() ) || (active_extruder == 1 && sw_on_timer_add + sw_time_add_1 < millis() ) ) {
 					sw_on_timer_add = 0; 
 					sw_switching_now = 0;
 				}
