@@ -145,9 +145,11 @@ void Config_StoreSettings()
 		float dummy = 0.0f;
 		EEPROM_WRITE_VAR(i, dummy);
 		EEPROM_WRITE_VAR(i, dummy);
+		EEPROM_WRITE_VAR(i, dummy);
 	#endif
   #else 
 	float dummy = 0.0f;	  
+	EEPROM_WRITE_VAR(i, dummy);
 	EEPROM_WRITE_VAR(i, dummy);
 	EEPROM_WRITE_VAR(i, dummy);
 	EEPROM_WRITE_VAR(i, dummy);
@@ -409,13 +411,13 @@ void Config_RetrieveSettings()
 
   #if defined MAGNUM_PRO || defined SW_EXTRUDER
   EEPROM_READ_VAR(i, extruder_offset[1]);
-  if (int(extruder_offset[1]) < 7 || int(extruder_offset[1]) > 40) {
+  if (int(extruder_offset[1]) < -40 || int(extruder_offset[1]) > -7) {
   // пока такая затычка нужны т.к. если прошить сначала
   // другой прошивкой новую плату, то начинаются проблемы	  
 	#if defined SW_EXTRUDER
-	  extruder_offset[1] = 9;
+	  extruder_offset[1] = -9;
 	#else
-	  extruder_offset[1] = 45;
+	  extruder_offset[1] = -35;
 	#endif
 	extruder_offset[3] = 0;
 	extruder_offset[5] = 0;

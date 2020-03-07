@@ -809,7 +809,7 @@ void setup()
 	} else if (READ(SW_T1_PIN) == 0) {
 		active_extruder = 1;
 	} else {
-		enquecommand_P((PSTR("T0")));
+		//enquecommand_P((PSTR("T0")));
 		//active_extruder = 0;
 	}
   #endif
@@ -838,6 +838,7 @@ void loop()
 		delay(300);
     }
   #endif*/
+  /*
   #ifdef SW_EXTRUDER
     if (sw_test and !sw_switching_now) {
         lcd_update();
@@ -849,6 +850,7 @@ void loop()
 		}
     }
   #endif
+   */
    
   if(buflen < (BUFSIZE-1))
     get_command();
@@ -5358,12 +5360,13 @@ void sw_do_change(int tmp_extruder) {
 	  //WRITE(SW_EN_PIN, tmp_extruder);
 
 
-	  
+	  /*
 	  if(code_seen('C')) { // Прочистка
 		sw_do_clean();
 	  } else if (!code_seen('S'))  {
 		//delay(sw_time_limit); //500 / 650
 	  }
+	  */
 	  
       // Set the new active extruder and position 
 	  int sve_active_extruder = active_extruder;
@@ -5385,9 +5388,12 @@ void sw_do_change(int tmp_extruder) {
 		//cli();   // disable interrupts
 		sw_timeout = 0;
 		sw_on_timer_add = 0;
+		//sw_time_add_1 = 30;
+		//sw_time_add_0 = 30;
 	  	while (sw_on_timer > 0 || sw_on_timer_add > 0) {
 				manage_heater();
 				manage_inactivity(true);
+				lcd_update();
 				//N//lcd_update();
 				// ждем сигнала с датчика
 				if (!sw_on_timer_add && ((active_extruder == 0 && READ(SW_T0_PIN) == 0) || (active_extruder == 1 && READ(SW_T1_PIN) == 0))) {
@@ -5404,10 +5410,32 @@ void sw_do_change(int tmp_extruder) {
 					sw_switching_now = 0;
 				}
 				//Дополнительное время для самофиксации
+				/* работает
+					if ( sw_on_timer_add + sw_time_add_0 < millis() ) {
+						sw_on_timer_add = 0; 
+						sw_switching_now = 0;
+					}
+				*/
+				/*
 				if ( (active_extruder == 0 && sw_on_timer_add + sw_time_add_1 < millis() ) || (active_extruder == 1 && sw_on_timer_add + sw_time_add_1 < millis() ) ) {
 					sw_on_timer_add = 0; 
 					sw_switching_now = 0;
+				}*/
+				
+				
+				if ( active_extruder == 0 ) {
+					if ( sw_on_timer_add + sw_time_add_0 < millis() ) {
+						sw_on_timer_add = 0; 
+						sw_switching_now = 0;
+					}
+				} else {
+					if ( sw_on_timer_add + sw_time_add_1 < millis() ) {
+						sw_on_timer_add = 0; 
+						sw_switching_now = 0;
+					}
 				}
+				
+				
 		}
 		WRITE(SW_EN_PIN, 0);
 		if (sw_timeout != 0) {
