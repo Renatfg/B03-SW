@@ -472,12 +472,14 @@ static void lcd_main_menu()
 }
 
 #ifdef SDSUPPORT
-static void lcd_autostart_sd()
-{
-    card.lastnr=0;
-    card.setroot();
-    card.checkautostart(true);
-}
+	#ifdef MENU_ADDAUTOSTART
+	static void lcd_autostart_sd()
+	{
+		card.lastnr=0;
+		card.setroot();
+		card.checkautostart(true);
+	}
+	#endif
 #endif
 
 void lcd_set_home_offsets()
@@ -899,14 +901,14 @@ static void sw_extruder_menu()
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
 	#if defined SW_EXTRUDER
 	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
-	if (READ(SERVICE_PIN) == 0) {
+	//if (READ(SERVICE_PIN) == 0) {
 	// показывается  только с установленным ключем
 		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD_0, &sw_time_add_0, 0, 70);
 		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD_1, &sw_time_add_1, 0, 70);
 		if (!movesplanned() && !IS_SD_PRINTING) { 
 		MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
 		}
-	}
+	//}
 	#endif
 	if (!movesplanned() && !IS_SD_PRINTING) {
 		MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
@@ -937,10 +939,12 @@ static void lcd_control_menu() // ******** Меню Настроить прин�
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+	#if defined(BEDLEV)
 	if (!movesplanned() && !IS_SD_PRINTING) 
     {
     MENU_ITEM(function, MSG_BED_LEVEL, bed_level);	 
 	}
+	#endif
 		
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
 	MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
@@ -1026,10 +1030,16 @@ static void lcd_control_mg_addons_menu()
 
 static void lcd_control_mg_pasta_menu()
 {
+	extern bool pasta_enabled;
+	extern bool pasta_dir_enabled;
 	START_MENU();
 	MENU_ITEM(back, MSG_MG_PASTA_MENU, lcd_control_mg_addons_menu);
-	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_PASTA_ENABLE_DIR, &pasta_dir_enabled, init_dir_pasta);
-	MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_PASTA_ENABLE, &pasta_enabled, init_fr_pasta);
+	#if defined(SW_EXTRUDER)
+		MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_PASTA_ENABLE, &pasta_enabled, init_fr_pasta);
+	#else
+		MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_PASTA_ENABLE_DIR, &pasta_dir_enabled, init_dir_pasta);	
+		MENU_ITEM_EDIT_CALLBACK(bool, MSG_MG_PASTA_ENABLE, &pasta_enabled, init_fr_pasta);
+	#endif
 	END_MENU();
 	
 }
@@ -2461,6 +2471,7 @@ void load_filament() {
 	load_filament_now = 0; //Все
 }
 
+#if defined(BEDLEV)
 void bed_level() {
 	bed_level_now = 1;
 	lcd_return_to_status();
@@ -2654,3 +2665,4 @@ void bed_level() {
 	lcd_setstatus(WELCOME_MSG);
 	return;
 }
+#endif

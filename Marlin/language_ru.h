@@ -55,7 +55,9 @@
 
 	
 	// MG -
+	#if defined(BEDLEV)
 	#define MSG_BED_LEVEL						"Калибровка стола"
+	#endif
 	#define MSG_LOAD_FILA						"Загрузить пластик"
 	#define WELCOME_MSG 				        "-= готов к печати =-"
 	#define MSG_SD_INSERTED						"SD карта установлена"
@@ -112,15 +114,15 @@
 	#define MSG_AUTOTEMP						"Autotemp"
 	#define MSG_ON								"Вкл"
 	#define MSG_OFF								"Выкл"
-	#define MSG_PID_P							"PID-P "
+	/*#define MSG_PID_P							"PID-P "
 	#define MSG_PID_I							"PID-I "
 	#define MSG_PID_D							"PID-D "
-	#define MSG_PID_C							"PID-C "
+	#define MSG_PID_C							"PID-C "*/
 	#define MSG_ACC								"Ускорение"//"Acc:"
 	#define MSG_VXY_JERK						"XY Jerk"
 	#define MSG_VZ_JERK                         "Z  Jerk"
 	#define MSG_VE_JERK                         "E  Jerk"
-	#define MSG_VMAX							"Max скорость"
+	/*#define MSG_VMAX							"Max скорость"
 	#define MSG_X								"X"
 	#define MSG_Y								"Y"
 	#define MSG_Z								"Z"
@@ -132,16 +134,16 @@
 	#define MSG_XSTEPS							"X шаг/mm:"
 	#define MSG_YSTEPS							"Y шаг/mm:"
 	#define MSG_ZSTEPS							"Z шаг/mm:"
-	#define MSG_ESTEPS							"E шаг/mm:"
+	#define MSG_ESTEPS							"E шаг/mm:"*/
 	#define MSG_RECTRACT    					"Ретракт"
 	#define MSG_TEMPERATURE  					"Нагрев и обдув" //"Температура     \x7E"
 	#define MSG_MOTION							"Скоростной режим"//"Скорости        \x7E"	
 	#define MSG_VOLUMETRIC                      "Filament"
 	#define MSG_VOLUMETRIC_ENABLED		        "E in mm3"
-	#define MSG_FILAMENT_SIZE_EXTRUDER_0        "Fil. Dia. 1"
-	#define MSG_FILAMENT_SIZE_EXTRUDER_1        "Fil. Dia. 2"
-	#define MSG_FILAMENT_SIZE_EXTRUDER_2        "Fil. Dia. 3"
-	#define MSG_CONTRAST  						"LCD contrast"
+	//#define MSG_FILAMENT_SIZE_EXTRUDER_0        "Fil. Dia. 1"
+	//#define MSG_FILAMENT_SIZE_EXTRUDER_1        "Fil. Dia. 2"
+	//#define MSG_FILAMENT_SIZE_EXTRUDER_2        "Fil. Dia. 3"
+	//#define MSG_CONTRAST  						"LCD contrast"
 	//#define MSG_STORE_EPROM  					"Сохранить в EPROM"
 	//#define MSG_LOAD_EPROM  					"Загруз.  из EPROM"
 	//#define MSG_RESTORE_FAILSAFE				"Сброс настроек"

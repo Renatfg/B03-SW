@@ -459,6 +459,7 @@ void check_axes_activity()
   unsigned char tail_e_to_p_pressure = EtoPPressure;
   #endif
   block_t *block;
+  extern bool pasta_enabled;
 
   if(block_buffer_tail != block_buffer_head)
   {
@@ -681,6 +682,7 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
         case 0: 
 		  //MG
 		  //enable_e0(); 
+		 extern bool pasta_enabled;
 		 if (pasta_enabled) {
 		  WRITE(E3_ENABLE_PIN, E_ENABLE_ON);
 		 } else {
@@ -692,7 +694,11 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
           if(g_uc_extruder_last_move[2] == 0) disable_e2(); 
         break;
         case 1:
+		 if (pasta_enabled) {
+		  WRITE(E3_ENABLE_PIN, E_ENABLE_ON);
+		 } else {
           enable_e1(); 
+		 }
           g_uc_extruder_last_move[1] = BLOCK_BUFFER_SIZE*2;
           
           if(g_uc_extruder_last_move[0] == 0) disable_e0(); 
@@ -711,13 +717,14 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     {
 	  //MG
       //enable_e0();
+	 extern bool pasta_enabled;
 		if (pasta_enabled) {
-		  WRITE(E3_ENABLE_PIN, E_ENABLE_ON);
+			WRITE(E3_ENABLE_PIN, E_ENABLE_ON);
 		} else {
-      enable_e0();
+			enable_e0();
+			enable_e1();
+			enable_e2();
 		}
-      enable_e1();
-      enable_e2(); 
     }
   }
 

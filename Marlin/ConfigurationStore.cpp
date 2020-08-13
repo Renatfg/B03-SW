@@ -29,8 +29,8 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 
 #define EEPROM_OFFSET 100
 
-extern unsigned long sw_time_add_0;
-extern unsigned long sw_time_add_1;
+unsigned long sw_time_add_0;
+unsigned long sw_time_add_1;
 extern float extruder_offset[];
 // IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
 // in the functions below, also increment the version number. This makes sure that

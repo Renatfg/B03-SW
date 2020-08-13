@@ -8,7 +8,8 @@ Arduino library for MicroChip MCP4728 I2C D/A converter.
 
 #include "Configuration.h"
 #include "Configuration_adv.h"
-#include "WProgram.h"
+//#include "WProgram.h"
+#include "Arduino.h"
 
 #ifdef DAC_STEPPER_CURRENT
 

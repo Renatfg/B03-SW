@@ -494,8 +494,8 @@ bool cancel_heatup = false ;
   unsigned long sw_on_timer_show = 0; // для отладки
   unsigned long sw_on_timer_add = 0;
   unsigned long sw_time_limit = 500; // 0.5 секунды защита переключения
-  unsigned long sw_time_add_0 = 30; // доп время для захода на самофиксацию
-  unsigned long sw_time_add_1 = 30; // доп время для захода на самофиксацию
+ // unsigned long sw_time_add_0 = 30; // доп время для захода на самофиксацию
+ // unsigned long sw_time_add_1 = 30; // доп время для захода на самофиксацию
   int sw_timeout = 0; // единица если переключение было прервано по таймеру а не датчику
   int sw_switching_now = 0; // чтобы не входило повторно в цикл
 #else
@@ -721,16 +721,35 @@ void servo_init()
 
 void setup()
 {
+
+digitalWrite(11, LOW);
+digitalWrite(53, LOW);
+/*
+pinMode(SS, OUTPUT);	
+digitalWrite(SS, LOW);
+
+pinMode(SDSS, OUTPUT);	
+digitalWrite(SDSS, LOW);
+*/
+
+//SET_OUTPUT(SS);
+//SET_OUTPUT(SDSS);
+//digitalWrite(SS, LOW);
+//digitalWrite(SDSS, LOW);
+	
 // MG lcd_init вверху
   lcd_init();
   
 #ifdef SW_EXTRUDER
 	SET_OUTPUT(SW_DIR_PIN);
-	WRITE(SW_DIR_PIN, 0);
+	WRITE(SW_DIR_PIN, 1); // Чтобы у Пасты был выключен двигатель (SW_DIR_PIN =	E3_ENABLE_PIN в новой схеме 2020)
 	SET_OUTPUT(SW_EN_PIN);
 	WRITE(SW_EN_PIN, 0);
 	SET_INPUT(SW_T0_PIN);
 	SET_INPUT(SW_T1_PIN);
+#else 
+	SET_OUTPUT(E3_ENABLE_PIN); 
+	WRITE(E3_ENABLE_PIN, 1); // Чтобы у Пасты был выключен двигатель	
 #endif
 
   setup_killpin();
@@ -5343,125 +5362,92 @@ void sw_do_change(int tmp_extruder) {
 		disable_e1();
 		// 8801
 		digitalWrite(SW_DIR_PIN, tmp_extruder);
-		//digitalWrite(SW_EN_PIN, 1); - не работает!
-		WRITE(SW_EN_PIN, 1);
+		WRITE(SW_EN_PIN, 1); //digitalWrite(SW_EN_PIN, 1); - не работает!
 		sw_on_timer = millis();
 		if (sw_test and tmp_extruder == 0 and !sw_switching_now) { sw_test++; }
 	  }
-	  
-	  //old
-	  //NEW
-		//digitalWrite(SW_DIR_PIN, tmp_extruder);
-		//WRITE(SW_EN_PIN, 1);	  
-	  
-	  //DRV8833
-	  //digitalWrite(SW_DIR_PIN, !tmp_extruder);
-	  // не пашет digitalWrite(SW_EN_PIN, tmp_extruder);
-	  //WRITE(SW_EN_PIN, tmp_extruder);
-
-
-	  /*
-	  if(code_seen('C')) { // Прочистка
-		sw_do_clean();
-	  } else if (!code_seen('S'))  {
-		//delay(sw_time_limit); //500 / 650
-	  }
-	  */
 	  
       // Set the new active extruder and position 
 	  int sve_active_extruder = active_extruder;
 	  current_position[X_AXIS] = current_position[X_AXIS] - extruder_offset[X_AXIS][active_extruder] + extruder_offset[X_AXIS][tmp_extruder];
 	  current_position[Y_AXIS] = current_position[Y_AXIS] - extruder_offset[Y_AXIS][active_extruder] + extruder_offset[Y_AXIS][tmp_extruder];
 	
-	//nn
 	// Прибавляем смещения по Z с инверсией, т.к. Z в нуле
 	  current_position[Z_AXIS] = current_position[Z_AXIS] + extruder_offset[Z_AXIS][active_extruder] - extruder_offset[Z_AXIS][tmp_extruder];
 	  
 	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]+zhop, current_position[E_AXIS]);
 
 	  active_extruder = tmp_extruder;
-	  /*
-	  // Прибавляем смещения по Z с инверсией, т.к. экструдер уже переключен
-	  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + extruder_offset[Z_AXIS][sve_active_extruder] - extruder_offset[Z_AXIS][tmp_extruder]+zhop, current_position[E_AXIS]);
-  */
+
 	//Цикл переключения SW ========
 		//cli();   // disable interrupts
-		sw_timeout = 0;
-		sw_on_timer_add = 0;
-		//sw_time_add_1 = 30;
-		//sw_time_add_0 = 30;
-	  	while (sw_on_timer > 0 || sw_on_timer_add > 0) {
-				manage_heater();
-				manage_inactivity(true);
-				lcd_update();
-				//N//lcd_update();
-				// ждем сигнала с датчика
-				if (!sw_on_timer_add && ((active_extruder == 0 && READ(SW_T0_PIN) == 0) || (active_extruder == 1 && READ(SW_T1_PIN) == 0))) {
-					//есть сигнал с датчика
-					sw_on_timer_show = millis() - sw_on_timer;
-					sw_on_timer = 0;
-					sw_on_timer_add = millis();
-					sw_switching_now = 0;
-				}
+		sw_timeout = 0; // единица если переключение было прервано по таймеру а не датчику
+		sw_on_timer_add = 0; // доп время после переключения
+	  //sw_on_timer = millis(); время переключения начала - запись выше при старте переключения
+	  
+	 extern int sw_time_add_0;
+	 extern int sw_time_add_1;
+
+		while (1) {
+				// ----------- manage_heater();
+				// ----------- manage_inactivity(true);
+				// ----------- lcd_update();
+
 				//Проверим не слишком ли долго крутит
-				if (!sw_on_timer_add && sw_on_timer + sw_time_limit < millis()) {
-					sw_on_timer = 0; 
+				if ( millis() > sw_on_timer + sw_time_limit ) {
+					sw_on_timer_show = millis() - sw_on_timer;
 					sw_timeout = 1;
 					sw_switching_now = 0;
+					break;
 				}
+
+				// ждем сигнала с датчика
+				// sw_on_timer_add == 0 это значит пока ждем сигнала с датчика (основной цикл
+				if (sw_on_timer_add == 0 && ((active_extruder == 0 && READ(SW_T0_PIN) == 0) || (active_extruder == 1 && READ(SW_T1_PIN) == 0))) {
+					//есть сигнал с датчика
+					sw_on_timer_add = millis();
+				}
+				
 				//Дополнительное время для самофиксации
-				/* работает
-					if ( sw_on_timer_add + sw_time_add_0 < millis() ) {
-						sw_on_timer_add = 0; 
-						sw_switching_now = 0;
-					}
-				*/
-				/*
-				if ( (active_extruder == 0 && sw_on_timer_add + sw_time_add_1 < millis() ) || (active_extruder == 1 && sw_on_timer_add + sw_time_add_1 < millis() ) ) {
-					sw_on_timer_add = 0; 
-					sw_switching_now = 0;
-				}*/
-				
-				
-				if ( active_extruder == 0 ) {
-					if ( sw_on_timer_add + sw_time_add_0 < millis() ) {
-						sw_on_timer_add = 0; 
-						sw_switching_now = 0;
-					}
-				} else {
-					if ( sw_on_timer_add + sw_time_add_1 < millis() ) {
-						sw_on_timer_add = 0; 
-						sw_switching_now = 0;
+				if ( sw_on_timer_add > 0 ) { // основное время закончилось
+					if ( active_extruder == 0 ) {
+						if (  millis() > sw_on_timer_add + sw_time_add_0 ) {
+							sw_on_timer_show = millis() - sw_on_timer;
+							sw_switching_now = 0;
+							break;
+						}
+					} else {
+						if (  millis() > sw_on_timer_add + sw_time_add_1 ) {
+							sw_on_timer_show = millis() - sw_on_timer;
+							sw_switching_now = 0;
+							break;
+						}
 					}
 				}
-				
-				
 		}
 		WRITE(SW_EN_PIN, 0);
 		if (sw_timeout != 0) {
 			// не стопится только с устновленным ключем
 			if (READ(SERVICE_PIN) != 0) {
 				LCD_ALERTMESSAGEPGM("Err: SW Timeout     ");// . sw_timeout);			
-				//Stop(); //kill();
-			 cli(); // Stop interrupts
-			disable_heater();
-			disable_x();
-			disable_y();
-			disable_z();
-			disable_e0();
-			disable_e1();
-			disable_e2();	
-				
-		 // FMC small patch to update the LCD before ending
-		  sei();   // enable interrupts
-		  for ( int i=5; i--; lcd_update())
-		  {
-			 delay(200);	
-		  }
-		  cli();   // disable interrupts
-		  suicide();
-		  while(1) { /* Intentionally left empty */ } // Wait for reset		
-						
+				cli(); // Stop interrupts
+				disable_heater();
+				disable_x();
+				disable_y();
+				disable_z();
+				disable_e0();
+				disable_e1();
+				disable_e2();	
+					
+			 // FMC small patch to update the LCD before ending
+			  sei();   // enable interrupts
+			  for ( int i=5; i--; lcd_update())
+			  {
+				 delay(200);	
+			  }
+			  cli();   // disable interrupts
+			  suicide();
+			  while(1) { /* Intentionally left empty */ } // Wait for reset		
 			}
 		}
 	//END Цикл переключения SW ========

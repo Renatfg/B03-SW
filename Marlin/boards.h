@@ -48,6 +48,8 @@
 #define BOARD_LEAPFROG          999  // Leapfrog
 
 #define BOARD_MAGNUM          	555  // Magnum
+#define BOARD_MAGNUM_2        	556  // Magnum MKS Gen_L V2.0
+
 
 #define BOARD_99                99   // This is in pins.h but...?
 

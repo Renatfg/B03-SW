@@ -99,6 +99,9 @@ extern bool filament_monitor_enabled;
 extern volatile uint8_t jam_detected;
 extern volatile uint8_t Filament_change_now;
 #endif
+
+extern bool pasta_enabled;
+
 //===========================================================================
 //=============================functions         ============================
 //===========================================================================
@@ -548,21 +551,21 @@ ISR(TIMER1_COMPA_vect)
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
         //REV_E_DIR();
 		//MG
-		if (pasta_enabled) {
-			WRITE(E3_DIR_PIN, INVERT_E3_DIR);
-		} else {
+		//if (pasta_enabled) {
+		//	WRITE(E3_DIR_PIN, INVERT_E3_DIR);
+		//} else {
         REV_E_DIR();
-		}
+		//}
         count_direction[E_AXIS]=-1;
       }
       else { // +direction
         //NORM_E_DIR();
 		//MG
-		if (pasta_enabled) {
-			WRITE(E3_DIR_PIN, !INVERT_E3_DIR);
-		} else {
+		//if (pasta_enabled) {
+		//	WRITE(E3_DIR_PIN, !INVERT_E3_DIR);
+		//} else {
         NORM_E_DIR();
-		}
+		//}
         count_direction[E_AXIS]=1;
 	  }
     #endif //!ADVANCE
@@ -608,12 +611,12 @@ ISR(TIMER1_COMPA_vect)
       #ifndef ADVANCE
         counter_e += current_block->steps_e;
         if (counter_e > 0) {
-          //WRITE_E_STEP(HIGH);
-		  //MG
-		  if (pasta_enabled) {
-			WRITE(E3_STEP_PIN, HIGH)
-		  } else {
           WRITE_E_STEP(HIGH);
+		  //MG
+		  //if (pasta_enabled) {
+		//	WRITE(E3_STEP_PIN, HIGH)
+		  //} else {
+          //WRITE_E_STEP(HIGH);
         }
         }
       #endif //!ADVANCE
@@ -640,11 +643,11 @@ ISR(TIMER1_COMPA_vect)
         if (counter_e > 0) {
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
-		  if (pasta_enabled) {
-			WRITE(E3_STEP_PIN, LOW)
-		  } else {
+		  //if (pasta_enabled) {
+			//WRITE(E3_STEP_PIN, LOW)
+		  //} else {
           WRITE_E_STEP(LOW);
-		  }
+		  //}
         }
       #endif //!ADVANCE
 #else

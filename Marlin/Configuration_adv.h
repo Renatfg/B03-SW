@@ -61,6 +61,7 @@
 #define TEMP_SENSOR_AD595_GAIN   1.0
 
 #if MOTHERBOARD == 555 // MG
+/*
 #if defined(M2000)
 #define CONTROLLERFAN_PIN -1 //на большом на этом пине обдув второго экструдера   
 #define EXTRUDER_1_AUTO_FAN_PIN   45
@@ -68,13 +69,23 @@
 #define CONTROLLERFAN_PIN 45 //Pin used for the fan to cool controller (-1 to disable)   
 #define EXTRUDER_1_AUTO_FAN_PIN   43
 #endif
+*/
 
 #define CONTROLLERFAN_SECS 10 //How many seconds, after all motors were disabled, the fan should run
 #define CONTROLLERFAN_SPEED 255  // == full speed
 
 #define FAN_KICKSTART_TIME 100
 
-#define EXTRUDER_0_AUTO_FAN_PIN   43
+#if MBOARD == 1
+	#define EXTRUDER_0_AUTO_FAN_PIN   43
+	#define EXTRUDER_1_AUTO_FAN_PIN   43
+	#define CONTROLLERFAN_PIN 45
+#else
+	#define EXTRUDER_0_AUTO_FAN_PIN   43
+	#define EXTRUDER_1_AUTO_FAN_PIN   43
+	#define CONTROLLERFAN_PIN -1
+#endif
+
 #define EXTRUDER_2_AUTO_FAN_PIN   -1
 
 #if defined(SW_EXTRUDER)

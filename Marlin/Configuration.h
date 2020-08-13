@@ -106,6 +106,10 @@
 // 110 is Pt100 with 1k pullup (non standard)
 
 #if MOTHERBOARD == 555
+	
+	// Плата 
+	#define MBOARD 1 // 1 - B03c, 2 - MKS GEN_L v2.0/1
+
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
 
@@ -113,11 +117,14 @@
   //#define MACHINE_MODEL "UNI"
 
   #define MAGNUM_PRO
-  #define MACHINE_MODEL "PRO"
-   #if defined(MAGNUM_PRO)
+  #if defined(MAGNUM_PRO)
 	// Переключающийся экструдер
 	#define SW_EXTRUDER
-   #endif
+  #endif
+  //#define MACHINE_MODEL "PRO"
+  #define MACHINE_MODEL "SW"
+  
+   
 
   //#define MAGNUM_EDU
   //#define MACHINE_MODEL "EDU"
@@ -154,9 +161,10 @@
  //#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-SW.1f"
  
  //h1 версия
- #define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1c"
+	//#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1c"
+	//#define FIRMWARE_VER "H1d" // исправлена ошибка с ЕПРОМ для SW
+	#define FIRMWARE_VERSION "Magnum-" MACHINE_MODEL "-B03-h1e"	// исправлены пины для Пасты FR
 
- 
  // раскоментировать для включения опции
  // Монитор прутка с кнопкой
  //#define FILAMENT_MONITOR;
@@ -170,7 +178,10 @@
 */
 
  // Лазер на внешнем разъеме
- //#define MGLASER
+ #define MGLASER
+ 
+ // Калибровка стола
+ //#define BEDLEV
  
  #define TEMP_SENSOR_0 1
 
@@ -738,30 +749,36 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 //Manual homing switch locations:
 #if MOTHERBOARD == 555 // MG
+
+#if MBOARD == 1
+	#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}	
+#else
+	#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 400, 148}
+#endif
+
   #if defined(M2000)
     #define MANUAL_X_HOME_POS 0
     #define MANUAL_Y_HOME_POS 0
     #define MANUAL_Z_HOME_POS 0
     #define HOMING_FEEDRATE {60*60, 60*60, 9*60, 0}  // set the homing speeds (mm/min)
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   {71.148,35.574,640,160}  //
+   // #define DEFAULT_AXIS_STEPS_PER_UNIT   {71.148,35.574,640,160}  //
   #elif defined(MAGNUM_EDU)
     #define MANUAL_X_HOME_POS 230
     #define MANUAL_Y_HOME_POS 210
     #define MANUAL_Z_HOME_POS 0
-    #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
+   // #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
   #elif defined(MAGNUM_TT)
     #define MANUAL_X_HOME_POS 230
     #define MANUAL_Y_HOME_POS 210
     #define MANUAL_Z_HOME_POS 0
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148} //145.59*1.09
+  //  #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148} //145.59*1.09
   #elif defined(MODUS)
     #define MANUAL_X_HOME_POS 0 //220
     #define MANUAL_Y_HOME_POS 0 //250
     #define MANUAL_Z_HOME_POS 0
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
+  //  #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
   #elif defined(MAGNUM_PRO)
   	#if defined(SW_EXTRUDER)
 	 #define X_MAX_POS_DEFAULT 240
@@ -773,14 +790,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
      #define MANUAL_X_HOME_POS 240
      #define MANUAL_Y_HOME_POS 170
      #define MANUAL_Z_HOME_POS 0
-	 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
-	 //16.04.2019 тест не оч, переливает вроде
-	 //#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 152}
 	#else
      #define MANUAL_X_HOME_POS 220
      #define MANUAL_Y_HOME_POS 180
      #define MANUAL_Z_HOME_POS 0
-	 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
 	#endif
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
   #else // UNI
@@ -788,9 +801,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
     #define MANUAL_Y_HOME_POS 180
     #define MANUAL_Z_HOME_POS 0
     #define HOMING_FEEDRATE {5000, 5000, 600, 0}  // set the homing speeds (mm/min)
-    //#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 200.0*16/3, 148}
-	// прошивка H1b 30.01.2020
-	#define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 800, 148}
   #endif
 
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
@@ -1059,7 +1069,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 #ifdef ULTIPANEL
 //  #define NEWPANEL  //enable this if you have a click-encoder panel
-  #define SDSUPPORT
+ // #define SDSUPPORT
   #define ULTRA_LCD
   #ifdef DOGLCD // Change number of lines to match the DOG graphic display
     #define LCD_WIDTH 20
