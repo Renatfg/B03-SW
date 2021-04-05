@@ -901,14 +901,14 @@ static void sw_extruder_menu()
 	MENU_ITEM_EDIT(float32, MSG_Y_OFFSET, &extruder_offset[3], -2, 2);
 	#if defined SW_EXTRUDER
 	MENU_ITEM_EDIT(float32, MSG_Z_OFFSET, &extruder_offset[5], -2, 2);
-	//if (READ(SERVICE_PIN) == 0) {
+	if (READ(SERVICE_PIN) == 0) {
 	// показывается  только с установленным ключем
 		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD_0, &sw_time_add_0, 0, 70);
 		MENU_ITEM_EDIT(int3, MSG_SW_TIMEADD_1, &sw_time_add_1, 0, 70);
 		if (!movesplanned() && !IS_SD_PRINTING) { 
 		MENU_ITEM(function, MSG_SW_SERVICE, sw_service_position);
 		}
-	//}
+	}
 	#endif
 	if (!movesplanned() && !IS_SD_PRINTING) {
 		MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);

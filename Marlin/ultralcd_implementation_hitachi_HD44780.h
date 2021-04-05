@@ -1314,7 +1314,7 @@ static void lcd_implementation_status_screen()
 		lcd.print(sw_test);
 	return;
 	}
-	/*
+	
 	if (READ(SERVICE_PIN) == 0) {
 		extern unsigned long sw_on_timer_show;
 		lcd.setCursor(0, 3);
@@ -1327,7 +1327,7 @@ static void lcd_implementation_status_screen()
 			lcd_printPGM(PSTR(" TIMER!"));	
 		} else {lcd_printPGM(PSTR("       "));}
 	return;
-	} */
+	}
   #endif
   // Status message line at the bottom
   lcd.setCursor(0, LCD_HEIGHT - 1);

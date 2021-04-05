@@ -724,6 +724,7 @@ void setup()
 
 digitalWrite(11, LOW);
 digitalWrite(53, LOW);
+digitalWrite(SERVICE_PIN, HIGH);
 /*
 pinMode(SS, OUTPUT);	
 digitalWrite(SS, LOW);

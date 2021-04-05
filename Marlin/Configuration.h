@@ -108,7 +108,7 @@
 #if MOTHERBOARD == 555
 	
 	// Плата 
-	#define MBOARD 1 // 1 - B03c, 2 - MKS GEN_L v2.0/1
+	#define MBOARD 2 // 1 - B03c, 2 - MKS GEN_L v2.0/1
 
   //#define MAGNUM_PLA
   //#define MACHINE_MODEL "PLA"
