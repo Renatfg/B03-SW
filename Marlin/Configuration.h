@@ -181,7 +181,7 @@
  #define MGLASER
  
  // Калибровка стола
- //#define BEDLEV
+ #define BEDLEV
  
  #define TEMP_SENSOR_0 1
 
